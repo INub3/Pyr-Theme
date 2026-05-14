@@ -1,0 +1,53 @@
+#!/bin/sh
+# =============================================================
+# Author: gh0stzk
+# Repo: https://github.com/gh0stzk/dotfiles
+# Date: 2024-02-22
+#
+# Script Name: Term Launcher
+# Description: Terminal launcher using Kitty only
+# Features:
+#   - Opens Kitty in multiple modes
+#
+# Copyright (C) 2021-2026 gh0stzk <z0mbi3.zk@protonmail.com>
+# Licensed under GPL-3.0 license
+# =============================================================
+
+CFG_TERM="$HOME/.config/bspwm/config/.term"
+[ -f "$CFG_TERM" ] || printf 'kitty' > "$CFG_TERM"
+read -r MY_TERM < "$CFG_TERM"
+
+[ "$MY_TERM" != "kitty" ] && MY_TERM="kitty"
+
+case $1 in
+    "--terminal"|"")
+        kitty
+        ;;
+    "--floating")
+        kitty --class=FloaTerm
+        ;;
+    "--update")
+        kitty --hold --class=FloaTerm -e paru -Syu --nocombinedupgrade
+        ;;
+    "--checkupdates")
+        kitty --hold --class=Updating -e Updates --print-updates
+        ;;
+    "--yazi")
+        kitty --hold --name=YaziTerm --class=FloaTerm -e yazi
+        ;;
+    "--nvim")
+        kitty -e nvim
+        ;;
+    "--music")
+        kitty --name=MusicTerm --class=FloaTerm -e ncmpcpp
+        ;;
+    "--fetch")
+        kitty --name=FetchTerm --class=FloaTerm -e ~/.local/bin/sysfetch
+        ;;
+    "--selecterm")
+        kitty
+        ;;
+    *)
+        kitty
+        ;;
+esac
