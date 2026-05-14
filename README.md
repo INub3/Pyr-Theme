@@ -30,7 +30,7 @@ Opcionalmente, para mejorar `zsh` y `nvim`:
 sudo apt install zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search fzf python3-pip
 ```
 
-El instalador también copia la configuración de `config/bspwm`, `config/kitty`, `config/nvim`, `config/zsh`, `config/eww`, `config/geany`, `config/mpd`, `config/ncmpcpp`, `config/gtk-3.0` y `config/yazi`.
+El instalador también copia la configuración de `config/bspwm`, `config/clipcat`, `config/geany`, `config/gtk-3.0`, `config/kitty`, `config/mpd`, `config/ncmpcpp`, `config/nvim`, `config/paru`, `config/systemd`, `config/yazi` y `config/zsh`.
 
 El script también descargará automáticamente los Nerd Fonts necesarios cuando falten: `CascadiaCode Nerd Font`, `JetBrainsMono Nerd Font` y `UbuntuMono Nerd Font`.
 

@@ -161,15 +161,17 @@ download_wallpapers() {
 install_configs() {
   local items=(
     "config/bspwm"
-    "config/kitty"
-    "config/nvim"
-    "config/zsh"
-    "config/eww"
+    "config/clipcat"
     "config/geany"
+    "config/gtk-3.0"
+    "config/kitty"
     "config/mpd"
     "config/ncmpcpp"
-    "config/gtk-3.0"
+    "config/nvim"
+    "config/paru"
+    "config/systemd"
     "config/yazi"
+    "config/zsh"
   )
 
   for item in "${items[@]}"; do
