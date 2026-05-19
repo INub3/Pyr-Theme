@@ -10,7 +10,7 @@ RICE_FILE="$CONFIG_DIR/bspwm/.rice"
 THEME_NAME="pyr"
 
 CORE_PACKAGES=(
-  bspwm sxhkd picom polybar feh kitty dunst rofi jgmenu neovim zsh mpd ncmpcpp geany lightdm git curl python3 python3-neovim nodejs npm ripgrep fd-find unzip ca-certificates fonts-cascadia-code fonts-jetbrains-mono fonts-noto-color-emoji fontconfig arc-theme papirus-icon-theme
+  bspwm sxhkd picom polybar feh kitty dunst rofi jgmenu neovim zsh mpd ncmpcpp geany lightdm git curl python3 python3-neovim nodejs npm ripgrep fd-find unzip ca-certificates rustc cargo fonts-cascadia-code fonts-jetbrains-mono fonts-noto-color-emoji fontconfig arc-theme papirus-icon-theme
 )
 OPTIONAL_PACKAGES=(
   eww qogir-icon-theme zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search fzf python3-pip clipcat
@@ -39,7 +39,7 @@ install_from_apt() {
       failed+=("$pkg")
       continue
     fi
-    if sudo apt-get install -y "$pkg" >/dev/null 2>&1; then
+    if sudo apt-get install -y "$pkg"; then
       printf '[install] installed %s\n' "$pkg"
     else
       printf '[install] warning: could not install %s\n' "$pkg"
@@ -58,7 +58,7 @@ install_from_apt() {
         printf '[install] optional package unavailable: %s\n' "$pkg"
         continue
       fi
-      if sudo apt-get install -y "$pkg" >/dev/null 2>&1; then
+      if sudo apt-get install -y "$pkg"; then
         printf '[install] installed optional %s\n' "$pkg"
       else
         printf '[install] optional package unavailable: %s\n' "$pkg"
@@ -104,7 +104,7 @@ install_fonts() {
     printf '[install] copied local fonts to %s\n' "$FONT_DIR"
   fi
   ensure_nerd_fonts
-  fc-cache -f "$FONT_DIR" >/dev/null 2>&1 || true
+  fc-cache -f "$FONT_DIR" || true
   printf '[install] refreshed font cache\n'
 }
 
@@ -127,13 +127,13 @@ install_nerd_font() {
 
   mkdir -p "$tmp_dir"
   printf '[install] downloading %s Nerd Font from %s\n' "$family" "$url"
-  if ! curl -fL -o "$tmp_zip" "$url" >/dev/null 2>&1; then
+  if ! curl -fL -o "$tmp_zip" "$url"; then
     printf '[install] warning: failed to download %s Nerd Font from %s\n' "$family" "$url"
     rm -rf "$tmp_dir" "$tmp_zip"
     return 1
   fi
 
-  unzip -o "$tmp_zip" -d "$tmp_dir" >/dev/null 2>&1
+  unzip -o "$tmp_zip" -d "$tmp_dir"
   find "$tmp_dir" -type f \( -iname '*.ttf' -o -iname '*.otf' \) -exec cp -n '{}' "$FONT_DIR/" \;
   rm -rf "$tmp_dir" "$tmp_zip"
   printf '[install] installed %s Nerd Font to %s\n' "$family" "$FONT_DIR"
@@ -151,11 +151,11 @@ download_fonts() {
   mkdir -p "$(dirname "$tmp_file")"
   printf '[install] downloading fonts from %s\n' "$url"
   curl -L -o "$tmp_file" "$url"
-  unzip -o "$tmp_file" -d "$HOME/.cache/pyr-install-fonts" >/dev/null 2>&1
+  unzip -o "$tmp_file" -d "$HOME/.cache/pyr-install-fonts"
   find "$HOME/.cache/pyr-install-fonts" -type f \( -iname '*.ttf' -o -iname '*.otf' \) -print0 |
     xargs -0 -I{} cp -n '{}' "$FONT_DIR/"
   rm -rf "$HOME/.cache/pyr-install-fonts" "$tmp_file"
-  fc-cache -f "$FONT_DIR" >/dev/null 2>&1 || true
+  fc-cache -f "$FONT_DIR" || true
   printf '[install] downloaded and installed fonts from URL\n'
 }
 
@@ -166,7 +166,7 @@ download_wallpapers() {
   printf '[install] downloading wallpapers from %s\n' "$url"
   curl -L -o "$tmp_file" "$url"
   mkdir -p "$REPO_ROOT/config/bspwm/rices/$THEME_NAME/walls"
-  unzip -o "$tmp_file" -d "$REPO_ROOT/config/bspwm/rices/$THEME_NAME/walls" >/dev/null 2>&1
+  unzip -o "$tmp_file" -d "$REPO_ROOT/config/bspwm/rices/$THEME_NAME/walls"
   rm -f "$tmp_file"
   printf '[install] downloaded additional wallpapers into %s\n' "$REPO_ROOT/config/bspwm/rices/$THEME_NAME/walls"
 }
@@ -215,13 +215,13 @@ install_eww_via_cargo() {
   mkdir -p "$tmp_dir"
 
   printf '[install] cloning eww repository for cargo install\n'
-  if ! git clone --depth 1 https://github.com/elkowar/eww.git "$tmp_dir" >/dev/null 2>&1; then
+  if ! git clone --depth 1 https://github.com/elkowar/eww.git "$tmp_dir"; then
     printf '[install] warning: failed to clone eww repository\n'
     return 1
   fi
 
   printf '[install] building eww from source via cargo\n'
-  if (cd "$tmp_dir" && cargo install --path . --locked --no-default-features --features x11 >/dev/null 2>&1); then
+  if (cd "$tmp_dir" && cargo install --path . --locked --no-default-features --features x11); then
     printf '[install] installed eww via cargo\n'
     return 0
   fi
@@ -259,7 +259,8 @@ apply_theme() {
   fi
 
   if ! command -v bspc >/dev/null 2>&1 || ! pgrep -x bspwm >/dev/null 2>&1; then
-    printf '[install] warning: BSPWM does not appear to be running; skipping theme application\n'
+    printf '[install] warning: BSPWM does not appear to be running; skipping theme application.\n'
+    printf '[install] You can apply the theme later with: ~/.config/bspwm/bin/Theme.sh\n'
     return 1
   fi
 
@@ -320,7 +321,12 @@ main() {
   install_fonts
 
   if ! command -v eww >/dev/null 2>&1; then
-    install_eww_via_cargo || printf '[install] warning: eww is not installed. To install manually, install rust/rustup and build from https://github.com/elkowar/eww\n'
+    if install_eww_via_cargo; then
+      printf '[install] eww installed via cargo\n'
+    else
+      printf '[install] warning: eww is not installed. To install manually, install rustup and cargo, then build from https://github.com/elkowar/eww\n'
+      printf '[install] See https://github.com/elkowar/eww#building for details.\n'
+    fi
   fi
 
   if [ -n "$download_fonts_url" ]; then
