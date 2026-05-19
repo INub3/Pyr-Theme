@@ -31,4 +31,8 @@ background = "${bg}"
 foreground = "${red}"
 _EOF_
 
-dunstctl reload "$dunst_config_file"
+if command -v dunstctl >/dev/null 2>&1; then
+    dunstctl reload >/dev/null 2>&1 || pkill -USR1 dunst >/dev/null 2>&1 || true
+elif pidof -q dunst; then
+    pkill -USR1 dunst >/dev/null 2>&1 || true
+fi

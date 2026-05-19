@@ -8,27 +8,27 @@ pick_random_wall() {
         "Random")
             random_img=$(pick_random_wall "$HOME/.config/bspwm/rices/$RICE/walls")
             feh --bg-fill "$random_img"
-            WallSync &
+            "$HOME"/.config/bspwm/bin/WallSync &
             ;;
         "CustomDir")
             random_img=$(pick_random_wall "$CUSTOM_DIR")
             feh --bg-fill "$random_img"
-            WallSync &
+            "$HOME"/.config/bspwm/bin/WallSync &
             ;;
         "Default")
             feh --bg-fill "$DEFAULT_WALL"
-            WallSync &
+            "$HOME"/.config/bspwm/bin/WallSync &
             ;;
         "Animated")
-            AnimatedWall --start "$ANIMATED_WALL"
-            WallSync --animated &
+            "$HOME"/.config/bspwm/bin/AnimatedWall --start "$ANIMATED_WALL"
+            "$HOME"/.config/bspwm/bin/WallSync --animated &
             ;;
         "Slideshow")
             (
                 while :; do
                     random_img=$(pick_random_wall "$HOME/.config/bspwm/rices/$RICE/walls")
                     feh --bg-fill "$random_img"
-                    WallSync
+                    "$HOME"/.config/bspwm/bin/WallSync
                     sleep 900  # 15 minutos
                 done
             ) &
@@ -37,6 +37,6 @@ pick_random_wall() {
         *)
             random_img=$(pick_random_wall "$HOME/.config/bspwm/rices/$RICE/walls")
             feh --bg-fill "$random_img"
-            WallSync &
+            "$HOME"/.config/bspwm/bin/WallSync &
             ;;
     esac

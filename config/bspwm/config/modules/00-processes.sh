@@ -10,7 +10,7 @@ wait_for_termination() {
 
 # Kill polybar or eww bars when you switch from the current theme to another
 if pgrep -x polybar >/dev/null; then
-    polybar-msg cmd quit >/dev/null
+    polybar-msg cmd quit >/dev/null 2>&1
     wait_for_termination "polybar"
 elif pgrep -f "eww.*bar" >/dev/null; then
     pkill -f "eww.*bar"

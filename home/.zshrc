@@ -113,13 +113,21 @@ PS1='%B%F{blue}%f%b  %B%F{magenta}%n%f%b $(dir_icon)  %B%F{red}%~%f%b${vcs_in
 #  ┌─┐┬  ┬ ┬┌─┐┬┌┐┌┌─┐
 #  ├─┘│  │ ││ ┬││││└─┐
 #  ┴  ┴─┘└─┘└─┘┴┘└┘└─┘
-source /usr/share/zsh/plugins/fzf-tab-git/fzf-tab.zsh
-source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh
+for plugin in \
+  fzf-tab-git/fzf-tab.zsh \
+  zsh-autosuggestions/zsh-autosuggestions.zsh \
+  zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
+  zsh-history-substring-search/zsh-history-substring-search.zsh; do
+  plugin_path="/usr/share/zsh/plugins/$plugin"
+  if [ -f "$plugin_path" ]; then
+    source "$plugin_path"
+  fi
+done
 
-bindkey '^[[A' history-substring-search-up
-bindkey '^[[B' history-substring-search-down
+if [ -f "/usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh" ]; then
+  bindkey '^[[A' history-substring-search-up
+  bindkey '^[[B' history-substring-search-down
+fi
 bindkey '^[[3~' delete-char
 bindkey "^[[H" beginning-of-line
 bindkey "^[[F" end-of-line
@@ -152,11 +160,15 @@ alias grub-update="sudo grub-mkconfig -o /boot/grub/grub.cfg"
 alias music="ncmpcpp"
 
 alias cat="bat --theme=base16"
-alias ls='eza --icons=always --color=always -a'
-alias ll='eza --icons=always --color=always -la'
+if command -v eza >/dev/null 2>&1; then
+  alias ls='eza --icons=always --color=always -a'
+  alias ll='eza --icons=always --color=always -la'
+fi
 
-#  ┌─┐┬ ┬┌┬┐┌─┐  ┌─┐┌┬┐┌─┐┬─┐┌┬┐
+#  ┌─┐┬ ┬┌┬┐┌─┐  ┌─┐┌┬┐┌─┐┬─┐┌┬┐┬┌┐┌┌─┐┬  ┌─┐  ┌┬┐┬┌┬┐┬  ┌─┐
 #  ├─┤│ │ │ │ │  └─┐ │ ├─┤├┬┘ │
 #  ┴ ┴└─┘ ┴ └─┘  └─┘ ┴ ┴ ┴┴└─ ┴
-$HOME/.local/bin/colorscript -r
+if command -v colorscript >/dev/null 2>&1; then
+  colorscript -r
+fi
 #disable-fzf-tab

@@ -22,7 +22,8 @@ Opciones adicionales:
 Si prefieres instalar dependencias manualmente, ejecuta:
 ```sh
 sudo apt update
-sudo apt install bspwm sxhkd picom polybar feh kitty dunst rofi jgmenu eww neovim zsh mpd ncmpcpp geany lightdm git curl python3 python3-neovim nodejs npm ripgrep fd-find unzip fonts-cascadia-code fonts-jetbrains-mono fonts-noto-color-emoji fontconfig arc-theme papirus-icon-theme qogir-icon-theme
+sudo apt install bspwm sxhkd picom polybar feh kitty dunst rofi jgmenu neovim zsh mpd ncmpcpp geany lightdm git curl python3 python3-neovim nodejs npm ripgrep fd-find unzip ca-certificates fonts-cascadia-code fonts-jetbrains-mono fonts-noto-color-emoji fontconfig arc-theme papirus-icon-theme
+# Nota: eww puede no estar disponible en los repositorios Debian; instálalo manualmente con cargo si es necesario.
 ```
 
 Opcionalmente, para mejorar `zsh` y `nvim`:

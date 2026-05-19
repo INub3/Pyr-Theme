@@ -17,6 +17,8 @@
 
 # Current Rice
 RICE="pyr"
+# Ensure local BSPWM bin helpers are available
+export PATH="$HOME/.config/bspwm/bin:$PATH"
 # Load theme configuration
 . "$HOME"/.config/bspwm/rices/"$RICE"/theme-config.bash
 # Path to modules dir

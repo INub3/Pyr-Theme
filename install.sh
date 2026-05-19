@@ -10,11 +10,15 @@ RICE_FILE="$CONFIG_DIR/bspwm/.rice"
 THEME_NAME="pyr"
 
 CORE_PACKAGES=(
-  bspwm sxhkd picom polybar feh kitty dunst rofi jgmenu eww neovim zsh mpd ncmpcpp geany lightdm git curl python3 python3-neovim nodejs npm ripgrep fd-find unzip fonts-cascadia-code fonts-jetbrains-mono fonts-noto-color-emoji fontconfig arc-theme papirus-icon-theme qogir-icon-theme
+  bspwm sxhkd picom polybar feh kitty dunst rofi jgmenu neovim zsh mpd ncmpcpp geany lightdm git curl python3 python3-neovim nodejs npm ripgrep fd-find unzip ca-certificates fonts-cascadia-code fonts-jetbrains-mono fonts-noto-color-emoji fontconfig arc-theme papirus-icon-theme
 )
 OPTIONAL_PACKAGES=(
-  zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search fzf python3-pip clipcat
+  eww qogir-icon-theme zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search fzf python3-pip clipcat
 )
+
+apt_package_available() {
+  apt-cache show "$1" >/dev/null 2>&1
+}
 
 install_from_apt() {
   if ! command -v apt-get >/dev/null 2>&1; then
@@ -30,6 +34,11 @@ install_from_apt() {
       printf '[install] %s already installed\n' "$pkg"
       continue
     fi
+    if ! apt_package_available "$pkg"; then
+      printf '[install] warning: core package not available in apt repos: %s\n' "$pkg"
+      failed+=("$pkg")
+      continue
+    fi
     if sudo apt-get install -y "$pkg" >/dev/null 2>&1; then
       printf '[install] installed %s\n' "$pkg"
     else
@@ -43,6 +52,10 @@ install_from_apt() {
     for pkg in "${OPTIONAL_PACKAGES[@]}"; do
       if dpkg -s "$pkg" >/dev/null 2>&1; then
         printf '[install] %s already installed\n' "$pkg"
+        continue
+      fi
+      if ! apt_package_available "$pkg"; then
+        printf '[install] optional package unavailable: %s\n' "$pkg"
         continue
       fi
       if sudo apt-get install -y "$pkg" >/dev/null 2>&1; then
@@ -187,6 +200,36 @@ install_configs() {
   copy_path "$REPO_ROOT/home/.zshrc" "$HOME/.zshrc"
 }
 
+install_eww_via_cargo() {
+  if command -v eww >/dev/null 2>&1; then
+    return 0
+  fi
+
+  if ! command -v cargo >/dev/null 2>&1 || ! command -v rustc >/dev/null 2>&1; then
+    printf '[install] cargo/rust not available, skipping eww source install\n'
+    return 1
+  fi
+
+  local tmp_dir="$HOME/.cache/pyr-install-eww"
+  rm -rf "$tmp_dir"
+  mkdir -p "$tmp_dir"
+
+  printf '[install] cloning eww repository for cargo install\n'
+  if ! git clone --depth 1 https://github.com/elkowar/eww.git "$tmp_dir" >/dev/null 2>&1; then
+    printf '[install] warning: failed to clone eww repository\n'
+    return 1
+  fi
+
+  printf '[install] building eww from source via cargo\n'
+  if (cd "$tmp_dir" && cargo install --path . --locked --no-default-features --features x11 >/dev/null 2>&1); then
+    printf '[install] installed eww via cargo\n'
+    return 0
+  fi
+
+  printf '[install] warning: cargo build of eww failed\n'
+  return 1
+}
+
 write_rice_file() {
   mkdir -p "$CONFIG_DIR/bspwm"
   printf '%s\n' "$THEME_NAME" > "$RICE_FILE"
@@ -205,12 +248,23 @@ set_shell() {
 }
 
 apply_theme() {
-  if [ -x "$CONFIG_DIR/bspwm/bin/Theme.sh" ]; then
-    "$CONFIG_DIR/bspwm/bin/Theme.sh"
-    printf '[install] applied theme using Theme.sh\n'
-  else
-    printf '[install] warning: Theme.sh not found or not executable at %s\n' "$CONFIG_DIR/bspwm/bin/Theme.sh"
+  if [ -z "${DISPLAY:-}" ]; then
+    printf '[install] skipping theme application because no X display is available\n'
+    return 0
   fi
+
+  if [ ! -x "$CONFIG_DIR/bspwm/bin/Theme.sh" ]; then
+    printf '[install] warning: Theme.sh not found or not executable at %s\n' "$CONFIG_DIR/bspwm/bin/Theme.sh"
+    return 1
+  fi
+
+  if ! command -v bspc >/dev/null 2>&1 || ! pgrep -x bspwm >/dev/null 2>&1; then
+    printf '[install] warning: BSPWM does not appear to be running; skipping theme application\n'
+    return 1
+  fi
+
+  "$CONFIG_DIR/bspwm/bin/Theme.sh"
+  printf '[install] applied theme using Theme.sh\n'
 }
 
 usage() {
@@ -264,6 +318,10 @@ main() {
 
   install_configs
   install_fonts
+
+  if ! command -v eww >/dev/null 2>&1; then
+    install_eww_via_cargo || printf '[install] warning: eww is not installed. To install manually, install rust/rustup and build from https://github.com/elkowar/eww\n'
+  fi
 
   if [ -n "$download_fonts_url" ]; then
     download_fonts "$download_fonts_url"
