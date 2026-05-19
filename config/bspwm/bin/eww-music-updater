@@ -1,0 +1,75 @@
+#!/bin/sh
+# Event-driven updater for Eww music widgets
+# Uses MediaControl to read values and updates eww variables via `eww update`.
+
+EWW_CMD="eww -c $HOME/.config/eww"
+MCMD="$HOME/.config/bspwm/bin/MediaControl"
+
+# ensure MediaControl is executable in path
+[ -x "$MCMD" ] || MCMD="MediaControl"
+
+prev_player=""
+prev_art=""
+prev_title=""
+prev_artist=""
+prev_status=""
+prev_position=""
+prev_positions=""
+prev_length=""
+prev_lengths=""
+prev_shuffle=""
+prev_loop=""
+
+update_all() {
+  player=$($MCMD --player 2>/dev/null || echo "MPD")
+  art=$($MCMD --cover 2>/dev/null || echo "")
+  title=$($MCMD --title 2>/dev/null || echo "Play Something")
+  artist=$($MCMD --artist 2>/dev/null || echo "No Artist")
+  status=$($MCMD --status 2>/dev/null || echo "Stopped")
+  position=$($MCMD --position 2>/dev/null || echo "0:00")
+  positions=$($MCMD --positions 2>/dev/null || echo "0")
+  length=$($MCMD --length 2>/dev/null || echo "0:00")
+  lengths=$($MCMD --lengths 2>/dev/null || echo "0")
+  shuffle=$($MCMD --shuffle 2>/dev/null || echo "Off")
+  loop=$($MCMD --loop 2>/dev/null || echo "Off")
+
+  [ "$player" != "$prev_player" ] && $EWW_CMD update music-player "$player" && prev_player="$player"
+  [ "$art" != "$prev_art" ] && $EWW_CMD update music-art "$art" && prev_art="$art"
+  [ "$title" != "$prev_title" ] && $EWW_CMD update music-title "$title" && prev_title="$title"
+  [ "$artist" != "$prev_artist" ] && $EWW_CMD update music-artist "$artist" && prev_artist="$artist"
+  [ "$status" != "$prev_status" ] && $EWW_CMD update music-status "$status" && prev_status="$status"
+  [ "$position" != "$prev_position" ] && $EWW_CMD update music-position "$position" && prev_position="$position"
+  [ "$positions" != "$prev_positions" ] && $EWW_CMD update music-positions "$positions" && prev_positions="$positions"
+  [ "$length" != "$prev_length" ] && $EWW_CMD update music-length "$length" && prev_length="$length"
+  [ "$lengths" != "$prev_lengths" ] && $EWW_CMD update music-lengths "$lengths" && prev_lengths="$lengths"
+  [ "$shuffle" != "$prev_shuffle" ] && $EWW_CMD update shuffle "$shuffle" && prev_shuffle="$shuffle"
+  [ "$loop" != "$prev_loop" ] && $EWW_CMD update loop "$loop" && prev_loop="$loop"
+}
+
+# trap children
+trap 'kill 0 >/dev/null 2>&1' EXIT INT TERM
+
+# initial update
+update_all
+
+# MPD event-based listener (if mpc available)
+if command -v mpc >/dev/null 2>&1; then
+  (while mpc idleloop player >/dev/null 2>&1; do
+    update_all
+  done) &
+fi
+
+# playerctl listeners for each player (if playerctl available)
+if command -v playerctl >/dev/null 2>&1; then
+  for p in $(playerctl -l 2>/dev/null); do
+    (playerctl -p "$p" metadata --format '{{status}}|{{title}}|{{artist}}' --follow 2>/dev/null | while read -r _; do
+      update_all
+    done) &
+  done
+fi
+
+# fallback: poll every 3s but only update on change
+while true; do
+  sleep 3
+  update_all
+done

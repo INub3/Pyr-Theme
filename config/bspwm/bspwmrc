@@ -78,6 +78,12 @@ pidof -q eww || { eww -c "${HOME}"/.config/eww daemon & }
 # Launch clipboard daemon
 run clipcatd
 
+# Launch MPD listener to update polybar/eww on track changes
+run "$HOME"/.config/bspwm/bin/mpd-listener
+
+# Launch Eww music updater (event-driven updates for player widgets)
+run "$HOME"/.config/bspwm/bin/eww-music-updater
+
 # Launch polkit
 run lxpolkit
 

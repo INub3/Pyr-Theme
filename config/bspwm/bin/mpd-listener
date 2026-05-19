@@ -1,0 +1,16 @@
+#!/bin/sh
+# Listen to MPD events and trigger polybar/eww updates
+export PATH="$HOME/.config/bspwm/bin:$PATH"
+
+# Use mpc idleloop if available
+if command -v mpc >/dev/null 2>&1; then
+  while mpc idleloop player >/dev/null 2>&1; do
+    if pgrep -x polybar >/dev/null 2>&1; then
+      polybar-msg action mpd hook 0 >/dev/null 2>&1 || true
+      polybar-msg cmd redraw >/dev/null 2>&1 || true
+    fi
+    if command -v eww >/dev/null 2>&1; then
+      eww -c "$HOME/.config/eww" reload >/dev/null 2>&1 || true
+    fi
+  done
+fi

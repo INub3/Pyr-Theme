@@ -1,0 +1,25 @@
+done
+#!/bin/sh
+# Listener to propagate bspwm events to Polybar and Eww for realtime updates
+# Enhanced: sends polybar hook for the `bspwm` module on relevant events and logs briefly.
+
+export PATH="$HOME/.config/bspwm/bin:$PATH"
+
+BSPC_SUBSCRIBE_EVENTS="desktop_focus node_state node_add node_remove node_transfer monitor_focus"
+
+bspc subscribe $BSPC_SUBSCRIBE_EVENTS | while read -r event; do
+    # Debug log (rotating, kept small)
+    printf '%s %s\n' "$(date +%s)" "${event}" >> "$HOME/.cache/bspc-listener.log" 2>/dev/null || true
+
+    # If polybar is running, trigger bspwm module hook and request a redraw
+    if pgrep -x polybar >/dev/null 2>&1; then
+        # trigger the bspwm module hook (hook index 0 expected to read current state)
+        polybar-msg action bspwm hook 0 >/dev/null 2>&1 || true
+        # also request a redraw to ensure visuals are fresh
+        polybar-msg cmd redraw >/dev/null 2>&1 || true
+    fi
+
+    # Reload eww widgets to reflect immediate state changes
+    if command -v eww >/dev/null 2>&1; then
+        eww -c "$HOME/.config/eww" reload >/dev/null 2>&1 || true
+    fi

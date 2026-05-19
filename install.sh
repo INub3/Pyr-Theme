@@ -214,12 +214,11 @@ install_eww_config() {
   fi
 }
 
-ensure_theme_scripts_executable() {
-  local theme_script="$CONFIG_DIR/bspwm/bin/Theme.sh"
-  if [ -f "$theme_script" ]; then
-    chmod +x "$theme_script"
-    printf '[install] ensured executable: %s
-' "$theme_script"
+ensure_bin_executables() {
+  local bin_dir="$CONFIG_DIR/bspwm/bin"
+  if [ -d "$bin_dir" ]; then
+    find "$bin_dir" -maxdepth 1 -type f -exec chmod +x '{}' \; || true
+    printf '[install] ensured executables in: %s\n' "$bin_dir"
   fi
 }
 
@@ -333,7 +332,7 @@ main() {
 
   install_configs
   install_eww_config
-  ensure_theme_scripts_executable
+  ensure_bin_executables
   install_fonts
 
   if ! command -v eww >/dev/null 2>&1; then

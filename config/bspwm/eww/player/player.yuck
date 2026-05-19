@@ -1,15 +1,15 @@
-;; Vars ;;
-(defpoll music-player     :interval "1s" "MediaControl --player")
-(defpoll music-art        :interval "3s" "MediaControl --cover")
-(defpoll music-title      :interval "1s" "MediaControl --title")
-(defpoll music-artist     :interval "1s" "MediaControl --artist")
-(defpoll music-status     :interval "1s" "MediaControl --status")
-(defpoll music-position   :interval "1s" "MediaControl --position")
-(defpoll music-positions  :interval "1s" "MediaControl --positions")
-(defpoll music-length     :interval "1s" "MediaControl --length")
-(defpoll music-lengths    :interval "1s" "MediaControl --lengths")
-(defpoll shuffle          :interval "1s" "MediaControl --shuffle")
-(defpoll loop             :interval "1s" "MediaControl --loop")
+;; Vars (event-driven: values are updated by external updater)
+(defvar music-player "MPD")
+(defvar music-art "")
+(defvar music-title "Play Something")
+(defvar music-artist "No Artist")
+(defvar music-status "Stopped")
+(defvar music-position "0:00")
+(defvar music-positions "0")
+(defvar music-length "0:00")
+(defvar music-lengths "0")
+(defvar shuffle "Off")
+(defvar loop "Off")
 
 ;; Widgets ;;
 (defwidget shuffle [color action status]
