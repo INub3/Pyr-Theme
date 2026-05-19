@@ -41,14 +41,14 @@ Asegura que tu gestor de sesión use BSPWM y, una vez instalado, inicia sesión 
 
 ## Uso
 
-- El tema activo es `Pyr`.
-- Para aplicar el tema manualmente:
+- El único tema disponible es `Pyr`.
+- Para aplicar o recargar el tema manualmente:
 ```sh
 ~/.config/bspwm/bin/Theme.sh
 ```
 - Abre terminal con `Super + Return`.
 - El selector de terminal actual usa `kitty`.
-- El archivo de tema actual es `~/.config/bspwm/.rice` y contiene `pyr`.
+- El tema activo es `Pyr` y se aplica con `~/.config/bspwm/bin/Theme.sh`.
 - La configuración de `nvim` está en `~/.config/nvim` y usa `lazy.nvim` para instalar plugins automáticamente en el primer arranque.
 - El shell `zsh` se carga desde `~/.zshrc`; si usas `zsh` por defecto, verás la configuración de completado y prompt incluida.
 

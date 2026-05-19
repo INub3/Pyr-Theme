@@ -24,9 +24,9 @@ super + {_,alt + }Return
 super + @space
     OpenApps --menu
 
-# Theme Selector
+# Reload current theme
 alt + @space
-    RiceSelector
+    ~/.config/bspwm/bin/Theme.sh
 
 # ----- Your Apps ----- #
 

@@ -129,6 +129,8 @@ Copia los archivos de configuración desde este repositorio a tus directorios lo
    ~/.config/bspwm/bin/Theme.sh
    ```
 
+   Nota: este proyecto solo proporciona el tema `Pyr`, por lo que no hay selector de temas adicional.
+
 3. Reinicia BSPWM o recarga la configuración:
    ```bash
    bspc wm -r  # O reinicia la sesión

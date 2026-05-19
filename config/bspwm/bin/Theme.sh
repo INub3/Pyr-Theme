@@ -9,13 +9,13 @@
 # Author: gh0stzk
 # Repo:   https://github.com/gh0stzk/dotfiles
 # Date:   10.11.2025
-# Info:   This file will configure and launch the rice.
+# Info:   This file will configure and launch the theme.
 #
 # Copyright (C) 2021-2026 gh0stzk <z0mbi3.zk@protonmail.com>
 # Licensed under GPL-3.0 license
 # =============================================================
 
-# Current Rice
+# Current theme
 RICE="pyr"
 # Ensure local BSPWM bin helpers are available
 export PATH="$HOME/.config/bspwm/bin:$PATH"

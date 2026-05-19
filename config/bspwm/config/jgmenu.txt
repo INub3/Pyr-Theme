@@ -3,7 +3,7 @@ Web Browser,OpenApps --browser,internet-web-browser
 File Manager,OpenApps --filemanager,org.xfce.thunar
 ^sep()
 
-Themes,^checkout(rices),colors
+Theme,^checkout(rices),colors
 Favorites,^checkout(favorites),starred
 ^sep()
 
@@ -12,7 +12,7 @@ BSPWM,^checkout(wm),gnome-windows
 Exit,^checkout(exit),system-shutdown
 
 ^tag(rices)
-Pyr,echo pyr > ~/.config/bspwm/.rice ; ~/.config/bspwm/bin/Theme.sh,colors
+Reload Theme,~/.config/bspwm/bin/Theme.sh,view-refresh
 
 ^tag(favorites)
 Editor,OpenApps --editor,standard-notes

@@ -210,18 +210,8 @@ install_eww_via_cargo() {
     return 1
   fi
 
-  local tmp_dir="$HOME/.cache/pyr-install-eww"
-  rm -rf "$tmp_dir"
-  mkdir -p "$tmp_dir"
-
-  printf '[install] cloning eww repository for cargo install\n'
-  if ! git clone --depth 1 https://github.com/elkowar/eww.git "$tmp_dir"; then
-    printf '[install] warning: failed to clone eww repository\n'
-    return 1
-  fi
-
-  printf '[install] building eww from source via cargo\n'
-  if (cd "$tmp_dir" && cargo install --path . --locked --no-default-features --features x11); then
+  printf '[install] installing eww from source via cargo\n'
+  if cargo install --git https://github.com/elkowar/eww --locked --no-default-features --features x11; then
     printf '[install] installed eww via cargo\n'
     return 0
   fi
