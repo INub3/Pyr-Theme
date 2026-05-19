@@ -68,7 +68,7 @@
 (defwidget closebtn []
   (box :orientation "h" :space-evenly "false" :halign "end"
     (eventbox :cursor "pointer"
-      (button :class "min" :onclick "eww -c ~/.config/bspwm/eww open --toggle launchermenu" "󰅙")
+      (button :class "min" :onclick "eww -c ~/.config/eww open --toggle launchermenu" "󰅙")
     )
   )
 )

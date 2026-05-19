@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cat >"$HOME"/.config/bspwm/eww/colors.scss <<-EOF
+cat >"$HOME"/.config/eww/colors.scss <<-EOF
 \$bg: ${bg};
 \$bg-alt: ${accent_color};
 \$fg: ${fg};

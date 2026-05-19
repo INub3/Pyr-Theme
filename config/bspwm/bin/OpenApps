@@ -8,7 +8,7 @@
 # Licensed under GPL-3.0 license
 # =============================================================
 
-WIDGET_DIR="$HOME/.config/bspwm/eww"
+WIDGET_DIR="$HOME/.config/eww"
 
 case "$1" in
 	--menu)

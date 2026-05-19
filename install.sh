@@ -13,7 +13,7 @@ CORE_PACKAGES=(
   bspwm sxhkd picom polybar feh kitty dunst rofi jgmenu neovim zsh mpd ncmpcpp geany lightdm git curl python3 python3-neovim nodejs npm ripgrep fd-find unzip ca-certificates rustc cargo fonts-cascadia-code fonts-jetbrains-mono fonts-noto-color-emoji fontconfig arc-theme papirus-icon-theme
 )
 OPTIONAL_PACKAGES=(
-  eww qogir-icon-theme zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search fzf python3-pip clipcat
+  eww qogir-icon-theme zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search fzf python3-pip clipcat pkg-config libglib2.0-dev libdbusmenu-glib-dev libdbusmenu-gtk3-dev libgtk-3-dev
 )
 
 apt_package_available() {
@@ -200,7 +200,31 @@ install_configs() {
   copy_path "$REPO_ROOT/home/.zshrc" "$HOME/.zshrc"
 }
 
+install_eww_config() {
+  local src="$REPO_ROOT/config/bspwm/eww"
+  local dest="$CONFIG_DIR/eww"
+  if [ -d "$src" ]; then
+    backup_path "$dest"
+    copy_path "$src" "$dest"
+    if [ -d "$CONFIG_DIR/bspwm/eww" ]; then
+      rm -rf "$CONFIG_DIR/bspwm/eww"
+      printf '[install] removed legacy eww config directory %s
+' "$CONFIG_DIR/bspwm/eww"
+    fi
+  fi
+}
+
+ensure_theme_scripts_executable() {
+  local theme_script="$CONFIG_DIR/bspwm/bin/Theme.sh"
+  if [ -f "$theme_script" ]; then
+    chmod +x "$theme_script"
+    printf '[install] ensured executable: %s
+' "$theme_script"
+  fi
+}
+
 install_eww_via_cargo() {
+  export PATH="$HOME/.cargo/bin:$PATH"
   if command -v eww >/dev/null 2>&1; then
     return 0
   fi
@@ -308,6 +332,8 @@ main() {
   fi
 
   install_configs
+  install_eww_config
+  ensure_theme_scripts_executable
   install_fonts
 
   if ! command -v eww >/dev/null 2>&1; then
