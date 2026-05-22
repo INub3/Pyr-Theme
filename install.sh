@@ -10,7 +10,7 @@ RICE_FILE="$CONFIG_DIR/bspwm/.rice"
 THEME_NAME="pyr"
 
 CORE_PACKAGES=(
-  bspwm sxhkd picom polybar feh kitty dunst rofi jgmenu neovim zsh mpd ncmpcpp geany lightdm git curl python3 python3-neovim nodejs npm ripgrep fd-find unzip ca-certificates rustc cargo fonts-cascadia-code fonts-jetbrains-mono fonts-noto-color-emoji fontconfig arc-theme papirus-icon-theme
+  bspwm sxhkd picom polybar feh kitty dunst rofi jgmenu neovim zsh mpd batcat eza flameshot ncmpcpp geany lightdm git curl python3 python3-neovim nodejs npm ripgrep fd-find unzip ca-certificates rustc cargo fonts-cascadia-code fonts-jetbrains-mono fonts-noto-color-emoji fontconfig arc-theme papirus-icon-theme
 )
 OPTIONAL_PACKAGES=(
   eww qogir-icon-theme zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search fzf python3-pip clipcat pkg-config libglib2.0-dev libdbusmenu-glib-dev libdbusmenu-gtk3-dev libgtk-3-dev

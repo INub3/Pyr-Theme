@@ -118,13 +118,13 @@ for plugin in \
   zsh-autosuggestions/zsh-autosuggestions.zsh \
   zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
   zsh-history-substring-search/zsh-history-substring-search.zsh; do
-  plugin_path="/usr/share/zsh/plugins/$plugin"
+  plugin_path="/usr/share/$plugin"
   if [ -f "$plugin_path" ]; then
     source "$plugin_path"
   fi
 done
 
-if [ -f "/usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh" ]; then
+if [ -f "/usr/share/zsh-history-substring-search/zsh-history-substring-search.zsh" ]; then
   bindkey '^[[A' history-substring-search-up
   bindkey '^[[B' history-substring-search-down
 fi
@@ -159,9 +159,10 @@ alias grub-update="sudo grub-mkconfig -o /boot/grub/grub.cfg"
 
 alias music="ncmpcpp"
 
-alias cat="bat --theme=base16"
+alias cat="/bin/batcat --theme=base16"
 if command -v eza >/dev/null 2>&1; then
-  alias ls='eza --icons=always --color=always -a'
+  alias ls='eza --icons=always --color=always'
+  alias la='eza --icons=always --color=always -a'
   alias ll='eza --icons=always --color=always -la'
 fi
 
