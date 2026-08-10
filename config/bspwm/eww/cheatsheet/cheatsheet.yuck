@@ -90,10 +90,10 @@
         (label :class "keys-alt" :xalign 1 :text ""))
       (box :orientation "h" :space-evenly "true"
         (label :class "keys" :xalign 0 :text "Send to other workspace")
-        (label :class "keys-alt" :xalign 1 :text "Super + Ctrl + 1-9"))
+        (label :class "keys-alt" :xalign 1 :text "Super + Shift + 1-9"))
       (box :orientation "h" :space-evenly "true"
         (label :class "keys" :xalign 0 :text "Send & follow")
-        (label :class "keys-alt" :xalign 1 :text "Super + Ctrl +  "))
+        (label :class "keys-alt" :xalign 1 :text "Super + Shift +  "))
       (box :orientation "h" :space-evenly "true"
         (label :class "category-preselection" :xalign 0.5 :text "Preselection")
         (label :text ""))
@@ -180,7 +180,7 @@
         (label :class "keys-alt" :xalign 1 :text "Super + Ctrl + {+,-}"))
       (box :orientation "h" :space-evenly "true"
         (label :class "keys" :xalign 0 :text "Move floating node")
-        (label :class "keys-alt" :xalign 1 :text "Super + Shift +    "))
+        (label :class "keys-alt" :xalign 1 :text "Super + Ctrl +    "))
       (box :orientation "h" :space-evenly "true"
         (label :class "category-others" :xalign 0.5 :text "Others")
         (label :text ""))
