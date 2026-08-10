@@ -1,5 +1,9 @@
 return {
 	"nvim-treesitter/nvim-treesitter",
+	-- The default branch is now `main`, a rewrite that dropped the
+	-- `nvim-treesitter.configs` module and requires Neovim 0.11+.
+	-- `master` keeps the API this config uses.
+	branch = "master",
 	event = { "BufReadPre", "BufNewFile" }, -- load when a buffer is opened or created
 	build = ":TSUpdate",
 	config = function()

@@ -1,18 +1,20 @@
 ;; Vars ;;
 
 ;; Fetch
-(defpoll os :interval "24h" "../eww/profilecard/scripts/fetch os")
-(defpoll wm :interval "24h" "../eww/profilecard/scripts/fetch wm")
+(defpoll os :interval "24h" "./profilecard/scripts/fetch os")
+(defpoll wm :interval "24h" "./profilecard/scripts/fetch wm")
 
 ;; Profile
-(defvar IMAGEP "../config/assets/profile.png")
+;; Relative to the eww config dir (~/.config/eww), where the assets live under
+;; ~/.config/bspwm/config/assets.
+(defvar IMAGEP "../bspwm/config/assets/profile.png")
 (defpoll username :interval "24h" "whoami")
 (defpoll hostname :interval "24h" "cat /etc/hostname")
 (defpoll uptime :interval "30s" "uptime -p | sed -E -e 's/hour(s)?/hrs/g' -e 's/minute(s)?/min/g'")
 
-;; Pacman
+;; Packages / pending upgrades
 (defpoll UPDATES :interval "15m" `cat $HOME/.cache/Updates.txt 2>/dev/null`)
-(defpoll packages :interval "1h" "pacman -Q | wc -l")
+(defpoll packages :interval "1h" "dpkg-query -f '.\\n' -W | wc -l")
 
 ;; Weather
 (defpoll weathericon :interval "15m" "Weather icon")
@@ -22,30 +24,30 @@
 (defpoll weatherhex :interval "15m" "Weather hex")
 
 ;; Networking
-(defpoll net_status :interval "3s" "../eww/profilecard/scripts/Network --status")
-(defpoll net_icon :interval "3s" "../eww/profilecard/scripts/Network --icon")
+(defpoll net_status :interval "3s" "./profilecard/scripts/Network --status")
+(defpoll net_icon :interval "3s" "./profilecard/scripts/Network --icon")
 
 ;; Temp
-(defpoll temp :interval "15s" "../eww/profilecard/scripts/cpuTemp")
+(defpoll temp :interval "15s" "./profilecard/scripts/cpuTemp")
 
 ;; Battery
-;;(defpoll battery :interval "3s" "../eww/profilecard/scripts/Battery get_battery")
-;;(defpoll battery_icon :interval "3s" "../eww/profilecard/scripts/Battery get_icon")
-;;(defpoll battery_status :interval "3s" "../eww/profilecard/scripts/Battery get_status")
+;;(defpoll battery :interval "3s" "./profilecard/scripts/Battery get_battery")
+;;(defpoll battery_icon :interval "3s" "./profilecard/scripts/Battery get_icon")
+;;(defpoll battery_status :interval "3s" "./profilecard/scripts/Battery get_status")
 
 ;; Bluetooth
-(defpoll blue_icon :interval "3s" "../eww/profilecard/scripts/Bluetooth --icon")
-(defpoll blue_name :interval "3s" "../eww/profilecard/scripts/Bluetooth --name")
+(defpoll blue_icon :interval "3s" "./profilecard/scripts/Bluetooth --icon")
+(defpoll blue_name :interval "3s" "./profilecard/scripts/Bluetooth --name")
 
 ;; Airplane Mode
-(defpoll airplane_icon :interval "3s" "../eww/profilecard/scripts/Airplane --icon")
-(defpoll airplane_status :interval "3s" "../eww/profilecard/scripts/Airplane --status")
+(defpoll airplane_icon :interval "3s" "./profilecard/scripts/Airplane --icon")
+(defpoll airplane_status :interval "3s" "./profilecard/scripts/Airplane --status")
 
 ;; Redshift
-(defpoll redshift_status :interval "3s" "../eww/profilecard/scripts/Redshift state")
+(defpoll redshift_status :interval "3s" "./profilecard/scripts/Redshift state")
 
 ;; GameMode
-(defpoll game_state :interval "2s" "../eww/profilecard/scripts/GameMode --status")
+(defpoll game_state :interval "2s" "./profilecard/scripts/GameMode --status")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -135,7 +137,7 @@
 					:spacing 8
 					(label :class "arch-icon"
 						   :halign "start"
-						   :text "󰣇")
+						   :text "")
 					(box
 						 :space-evenly "false"
 						 (box :orientation "v"
@@ -144,7 +146,7 @@
 							  :style "margin-left: 10px;"
 							  (label :class "os-icon"
 									 :halign "start"
-									 :text "󰣇")
+									 :text "")
 							  (label :class "pkgs-icon"
 									 :halign "start"
 									 :text "󰮯")
@@ -254,24 +256,24 @@
           (button :class {blue_name == "On" ? "bluetooth-btn" :
                           blue_name == "Null" ? "bluetooth-no-btn" :
                           blue_name == "Off" ? "bluetooth-no-btn" : "bluetooth-btn"}
-                  :onclick "../eww/profilecard/scripts/Bluetooth --toggle" blue_icon))
+                  :onclick "./profilecard/scripts/Bluetooth --toggle" blue_icon))
         (label :class "info-btn" :limit-width 12 :xalign 0.5 :text blue_name))
 
       (box  :class "tools-main" :orientation "v" :space-evenly "false" :spacing 2
         (eventbox :class "tools-box" :width 43 :height 43 :halign "center" :cursor "pointer" :tooltip "Airplane Mode"
-          (button :class {airplane_status == "On" ? "airplane-btn" : "airplane-no-btn"} :onclick "../eww/profilecard/scripts/Airplane --toggle" airplane_icon))
+          (button :class {airplane_status == "On" ? "airplane-btn" : "airplane-no-btn"} :onclick "./profilecard/scripts/Airplane --toggle" airplane_icon))
         (label :class "info-btn" :limit-width 12 :xalign 0.5 :text airplane_status)))
 
 
     (box  :orientation "h" :space-evenly "true" :spacing 1
       (box  :class "tools-main" :orientation "v" :space-evenly "false" :spacing 2
         (eventbox :class "tools-box" :width 43 :height 43 :halign "center" :cursor "pointer" :tooltip "Night Light"
-          (button :class {redshift_status == "on" ? "redshift-btn" : "redshift-no-btn"} :onclick "../eww/profilecard/scripts/Redshift toggle" {redshift_status == "on" ? "󰹐" : "󱠃"}))
+          (button :class {redshift_status == "on" ? "redshift-btn" : "redshift-no-btn"} :onclick "./profilecard/scripts/Redshift toggle" {redshift_status == "on" ? "󰹐" : "󱠃"}))
         (label :class "info-btn" :limit-width 12 :xalign 0.5 :text "Night Light"))
 
       (box  :class "tools-main" :orientation "v" :space-evenly "false" :spacing 2
         (eventbox :class "tools-box" :width 43 :height 43 :halign "center" :cursor "pointer"
-          (button :class {game_state == "Off" ? "game-no-btn" : "game-btn"} :timeout "60000ms" :onclick "../eww/profilecard/scripts/GameMode --toggle" "󰺵"))
+          (button :class {game_state == "Off" ? "game-no-btn" : "game-btn"} :timeout "60000ms" :onclick "./profilecard/scripts/GameMode --toggle" "󰺵"))
         (label :class "info-btn" :limit-width 12 :xalign 0.5 :text "Game Mode")))
   )
 )

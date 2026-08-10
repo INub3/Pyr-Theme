@@ -9,7 +9,7 @@
 
 # Function to check if there is an Internet connection
 is_online() {
-    ping -c 1 -W 1 archlinux.org > /dev/null 2>&1
+    ping -c 1 -W 1 deb.debian.org > /dev/null 2>&1
 }
 
 # Get the connection type and network name

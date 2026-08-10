@@ -35,8 +35,10 @@ set_padding() {
     bspc config right_padding "$4"
 }
 
+# Upstream shipped rices whose bar was built with eww; Pyr uses polybar, but a
+# rice is still free to provide its own eww bar under rices/<rice>/bar.
 is_eww_theme() {
-    [ "$current_rice" = "z0mbi3" ] || [ "$current_rice" = "andrea" ]
+    [ -d "$eww_bar_path" ]
 }
 
 toggle_bar() {

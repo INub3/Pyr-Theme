@@ -46,7 +46,7 @@ COLORBAR=${c}$(printf "\033[37m█\033[0m▒░")
 name=$USER
 host=$(uname -n)
 distro=$(uname -o | awk -F '"' '/PRETTY_NAME/ { print $2 }' /etc/os-release)
-packages=$(pacman -Q | wc -l)
+packages=$(dpkg-query -f '.\n' -W 2>/dev/null | wc -l)
 wm=$(xprop -id "$(xprop -root -notype | awk '$1=="_NET_SUPPORTING_WM_CHECK:"{print $5}')" -notype -f _NET_WM_NAME 8t | grep "WM_NAME" | cut -f2 -d \")
 storage=$(df -h --output=used / | awk 'NR == 2 { print $1 }')
 term=$(ps -o sid= -p "$$" | xargs ps -o ppid= -p | xargs ps -o comm= -p)

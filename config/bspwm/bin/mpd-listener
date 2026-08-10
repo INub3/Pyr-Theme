@@ -1,6 +1,11 @@
 #!/bin/sh
-# Listen to MPD events and trigger polybar/eww updates
-export PATH="$HOME/.config/bspwm/bin:$PATH"
+# Listen to MPD events and refresh the polybar mpd modules.
+#
+# The eww player is NOT refreshed from here: eww-music-updater already follows
+# the same mpc idleloop and pushes values with `eww update`. Calling
+# `eww reload` here would re-read the config and reset those variables back to
+# their defvar defaults, undoing the update that just happened.
+export PATH="$HOME/.config/bspwm/bin:$HOME/.local/bin:$PATH"
 
 # Use mpc idleloop if available
 if command -v mpc >/dev/null 2>&1; then
@@ -8,9 +13,6 @@ if command -v mpc >/dev/null 2>&1; then
     if pgrep -x polybar >/dev/null 2>&1; then
       polybar-msg action mpd hook 0 >/dev/null 2>&1 || true
       polybar-msg cmd redraw >/dev/null 2>&1 || true
-    fi
-    if command -v eww >/dev/null 2>&1; then
-      eww -c "$HOME/.config/eww" reload >/dev/null 2>&1 || true
     fi
   done
 fi

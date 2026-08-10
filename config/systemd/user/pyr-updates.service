@@ -1,5 +1,5 @@
 [Unit]
-Description=Check for available updates & sync polybar or eww bar
+Description=Check for available apt upgrades & sync the polybar/eww updates module
 
 [Service]
 Type=oneshot
@@ -7,4 +7,3 @@ ExecStart=%h/.config/bspwm/bin/Updates --sync-polybar
 
 [Install]
 WantedBy=default.target
-

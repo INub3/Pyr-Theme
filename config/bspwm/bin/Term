@@ -27,7 +27,7 @@ case $1 in
         kitty --class=FloaTerm
         ;;
     "--update")
-        kitty --hold --class=FloaTerm -e paru -Syu --nocombinedupgrade
+        kitty --hold --class=FloaTerm -e sh -c 'sudo apt update && sudo apt full-upgrade'
         ;;
     "--checkupdates")
         kitty --hold --class=Updating -e Updates --print-updates

@@ -8,16 +8,75 @@ FONT_DIR="$HOME/.local/share/fonts"
 CONFIG_DIR="$HOME/.config"
 RICE_FILE="$CONFIG_DIR/bspwm/.rice"
 THEME_NAME="pyr"
+LOCAL_BIN="$HOME/.local/bin"
+LOCAL_SHARE="$HOME/.local/share"
+MISSING_PACKAGES=()
 
+# Packages the desktop cannot start without.
 CORE_PACKAGES=(
-  bspwm sxhkd picom polybar feh kitty dunst rofi jgmenu neovim zsh mpd batcat eza flameshot ncmpcpp geany lightdm git curl python3 python3-neovim nodejs npm ripgrep fd-find unzip ca-certificates rustc cargo fonts-cascadia-code fonts-jetbrains-mono fonts-noto-color-emoji fontconfig arc-theme papirus-icon-theme
+  # Window manager, compositor, bar and menus
+  bspwm sxhkd picom polybar feh kitty dunst rofi jgmenu
+  # X11 helpers used by bspwmrc, the theme modules and the bin/ scripts
+  xsettingsd x11-xserver-utils x11-utils x11-xkb-utils xdotool xclip
+  # Notifications, polkit agent and session
+  libnotify-bin lxpolkit lightdm
+  # Audio / media stack driving Volume, MediaControl and the eww player
+  mpd mpc ncmpcpp pamixer pavucontrol playerctl ffmpeg
+  # Hardware controls used by the profilecard widget and the polybar modules
+  brightnessctl network-manager bluez rfkill iputils-ping
+  # Screenshots, screen locking and wallpaper tooling
+  flameshot maim imagemagick i3lock
+  # Shell, editors and CLI tools referenced by .zshrc / Term / RofiPass
+  zsh neovim geany bat eza jq bc pass gnupg
+  # Runtime for the Python helpers (RiceEditor, NetManagerDM)
+  python3 python3-gi gir1.2-gtk-3.0 gir1.2-nm-1.0 python3-neovim
+  # Build/base tooling and fonts
+  git curl nodejs npm ripgrep fd-find unzip ca-certificates
+  fonts-cascadia-code fonts-jetbrains-mono fonts-noto-color-emoji fontconfig
+  arc-theme papirus-icon-theme
 )
+
+# Nice to have: the desktop degrades gracefully when these are missing.
 OPTIONAL_PACKAGES=(
-  eww qogir-icon-theme zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search fzf python3-pip clipcat pkg-config libglib2.0-dev libdbusmenu-glib-dev libdbusmenu-gtk3-dev libgtk-3-dev
+  qogir-icon-theme clipcat yazi redshift simple-mtpfs mpv
+  zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search fzf python3-pip
+)
+
+# Only pulled in when eww has to be compiled from source (see install_eww).
+EWW_BUILD_PACKAGES=(
+  rustc cargo pkg-config libglib2.0-dev libdbusmenu-glib-dev libdbusmenu-gtk3-dev libgtk-3-dev
 )
 
 apt_package_available() {
   apt-cache show "$1" >/dev/null 2>&1
+}
+
+# install_pkg_group <label> <name-of-array> [name-of-failed-array]
+# Installs every package of the group, recording the ones apt could not provide.
+install_pkg_group() {
+  local label="$1"
+  local -n _pkgs="$2"
+  local track_failures="${3:-}"
+
+  printf '\n[install] Installing %s packages...\n' "$label"
+  local pkg
+  for pkg in "${_pkgs[@]}"; do
+    if dpkg -s "$pkg" >/dev/null 2>&1; then
+      printf '[install] %s already installed\n' "$pkg"
+      continue
+    fi
+    if ! apt_package_available "$pkg"; then
+      printf '[install] %s package not available in apt repos: %s\n' "$label" "$pkg"
+      [ -n "$track_failures" ] && MISSING_PACKAGES+=("$pkg")
+      continue
+    fi
+    if sudo apt-get install -y "$pkg"; then
+      printf '[install] installed %s\n' "$pkg"
+    else
+      printf '[install] warning: could not install %s\n' "$pkg"
+      [ -n "$track_failures" ] && MISSING_PACKAGES+=("$pkg")
+    fi
+  done
 }
 
 install_from_apt() {
@@ -27,48 +86,13 @@ install_from_apt() {
   fi
 
   sudo apt-get update
-  local failed=()
 
-  for pkg in "${CORE_PACKAGES[@]}"; do
-    if dpkg -s "$pkg" >/dev/null 2>&1; then
-      printf '[install] %s already installed\n' "$pkg"
-      continue
-    fi
-    if ! apt_package_available "$pkg"; then
-      printf '[install] warning: core package not available in apt repos: %s\n' "$pkg"
-      failed+=("$pkg")
-      continue
-    fi
-    if sudo apt-get install -y "$pkg"; then
-      printf '[install] installed %s\n' "$pkg"
-    else
-      printf '[install] warning: could not install %s\n' "$pkg"
-      failed+=("$pkg")
-    fi
-  done
+  install_pkg_group "core" CORE_PACKAGES track
+  install_pkg_group "optional" OPTIONAL_PACKAGES
 
-  if [ ${#OPTIONAL_PACKAGES[@]} -gt 0 ]; then
-    printf '\n[install] Installing optional packages...\n'
-    for pkg in "${OPTIONAL_PACKAGES[@]}"; do
-      if dpkg -s "$pkg" >/dev/null 2>&1; then
-        printf '[install] %s already installed\n' "$pkg"
-        continue
-      fi
-      if ! apt_package_available "$pkg"; then
-        printf '[install] optional package unavailable: %s\n' "$pkg"
-        continue
-      fi
-      if sudo apt-get install -y "$pkg"; then
-        printf '[install] installed optional %s\n' "$pkg"
-      else
-        printf '[install] optional package unavailable: %s\n' "$pkg"
-      fi
-    done
-  fi
-
-  if [ ${#failed[@]} -gt 0 ]; then
+  if [ ${#MISSING_PACKAGES[@]} -gt 0 ]; then
     printf '\n[install] WARNING: some core packages could not be installed:\n'
-    printf '  %s\n' "${failed[@]}"
+    printf '  %s\n' "${MISSING_PACKAGES[@]}"
     printf '[install] Please install missing packages manually and rerun the script.\n'
   fi
 }
@@ -181,7 +205,6 @@ install_configs() {
     "config/mpd"
     "config/ncmpcpp"
     "config/nvim"
-    "config/paru"
     "config/systemd"
     "config/yazi"
     "config/zsh"
@@ -196,8 +219,70 @@ install_configs() {
     fi
   done
 
+  # zcompdump and zhistory are per-machine state, so they are not shipped;
+  # zsh recreates them on first login as long as the directory exists.
+  mkdir -p "$CONFIG_DIR/zsh"
+
   backup_path "$HOME/.zshrc"
   copy_path "$REPO_ROOT/home/.zshrc" "$HOME/.zshrc"
+
+  # GTK2 apps read ~/.gtkrc-2.0; without it they ignore the theme entirely.
+  if [ -f "$REPO_ROOT/home/.gtkrc-2.0" ]; then
+    backup_path "$HOME/.gtkrc-2.0"
+    copy_path "$REPO_ROOT/home/.gtkrc-2.0" "$HOME/.gtkrc-2.0"
+  fi
+}
+
+# WallSelect, WallSync and ScreenLocker call `magick`, the ImageMagick 7 entry
+# point. Debian 12 still ships ImageMagick 6, where the equivalent is `convert`.
+# The invocations used here are compatible, so bridge them with a small wrapper.
+ensure_magick_shim() {
+  if command -v magick >/dev/null 2>&1; then
+    return 0
+  fi
+  if ! command -v convert >/dev/null 2>&1; then
+    printf '[install] warning: neither magick nor convert found; wallpaper previews and the lockscreen blur will not work\n'
+    return 1
+  fi
+
+  mkdir -p "$LOCAL_BIN"
+  cat > "$LOCAL_BIN/magick" <<'EOF'
+#!/bin/sh
+# Compatibility shim: ImageMagick 6 (Debian 12) has no `magick` entry point.
+exec convert "$@"
+EOF
+  chmod +x "$LOCAL_BIN/magick"
+  printf '[install] ImageMagick 6 detected; installed a magick -> convert shim in %s\n' "$LOCAL_BIN"
+}
+
+# misc/ holds pieces the desktop actually calls at runtime:
+#   misc/bin/sysfetch     <- Term --fetch
+#   misc/bin/colorscript  <- .zshrc greeting, reads ~/.local/share/asciiart
+#   misc/applications/*   <- desktop entries for RiceEditor and the fetch popup
+install_misc() {
+  mkdir -p "$LOCAL_BIN" "$LOCAL_SHARE/applications"
+
+  if [ -d "$REPO_ROOT/misc/bin" ]; then
+    find "$REPO_ROOT/misc/bin" -maxdepth 1 -type f -exec cp '{}' "$LOCAL_BIN/" \;
+    find "$LOCAL_BIN" -maxdepth 1 -type f -exec chmod +x '{}' \; || true
+    printf '[install] installed helper scripts into %s\n' "$LOCAL_BIN"
+  fi
+
+  if [ -d "$REPO_ROOT/misc/asciiart" ]; then
+    backup_path "$LOCAL_SHARE/asciiart"
+    copy_path "$REPO_ROOT/misc/asciiart" "$LOCAL_SHARE/asciiart"
+  fi
+
+  ensure_magick_shim
+
+  if [ -d "$REPO_ROOT/misc/applications" ]; then
+    find "$REPO_ROOT/misc/applications" -maxdepth 1 -type f \
+      -exec cp '{}' "$LOCAL_SHARE/applications/" \;
+    printf '[install] installed desktop entries into %s\n' "$LOCAL_SHARE/applications"
+    if command -v update-desktop-database >/dev/null 2>&1; then
+      update-desktop-database "$LOCAL_SHARE/applications" >/dev/null 2>&1 || true
+    fi
+  fi
 }
 
 install_eww_config() {
@@ -215,32 +300,77 @@ install_eww_config() {
 }
 
 ensure_bin_executables() {
-  local bin_dir="$CONFIG_DIR/bspwm/bin"
-  if [ -d "$bin_dir" ]; then
-    find "$bin_dir" -maxdepth 1 -type f -exec chmod +x '{}' \; || true
-    printf '[install] ensured executables in: %s\n' "$bin_dir"
-  fi
+  local dir
+  # The eww widgets shell out to their own scripts; a lost +x bit breaks the
+  # whole profilecard silently, so re-assert it on every install.
+  for dir in "$CONFIG_DIR/bspwm/bin" "$CONFIG_DIR/eww/profilecard/scripts"; do
+    if [ -d "$dir" ]; then
+      find "$dir" -maxdepth 1 -type f -exec chmod +x '{}' \; || true
+      printf '[install] ensured executables in: %s\n' "$dir"
+    fi
+  done
 }
 
-install_eww_via_cargo() {
+# Debian ships no eww package, so the only supported route is a source build.
+# It takes a long while, hence --skip-eww to opt out.
+install_eww() {
   export PATH="$HOME/.cargo/bin:$PATH"
   if command -v eww >/dev/null 2>&1; then
+    printf '[install] eww already available: %s\n' "$(command -v eww)"
     return 0
   fi
 
+  # A packaged eww would be preferable; check in case the repo/derivative has one.
+  if command -v apt-get >/dev/null 2>&1 && apt_package_available eww; then
+    printf '[install] installing eww from apt\n'
+    sudo apt-get install -y eww && return 0
+  fi
+
+  printf '\n[install] eww is not packaged for Debian; building it from source.\n'
+  printf '[install] This can take 10+ minutes. Re-run with --skip-eww to skip it.\n'
+
+  install_pkg_group "eww build" EWW_BUILD_PACKAGES
+
   if ! command -v cargo >/dev/null 2>&1 || ! command -v rustc >/dev/null 2>&1; then
-    printf '[install] cargo/rust not available, skipping eww source install\n'
+    printf '[install] warning: cargo/rustc unavailable, cannot build eww\n'
     return 1
   fi
 
-  printf '[install] installing eww from source via cargo\n'
   if cargo install --git https://github.com/elkowar/eww --locked --no-default-features --features x11; then
-    printf '[install] installed eww via cargo\n'
+    printf '[install] installed eww into %s\n' "$HOME/.cargo/bin"
+    # The bspwm session does not inherit ~/.cargo/bin from the login shell,
+    # so expose eww through ~/.local/bin, which bspwmrc puts on PATH.
+    if [ -x "$HOME/.cargo/bin/eww" ]; then
+      mkdir -p "$LOCAL_BIN"
+      ln -sf "$HOME/.cargo/bin/eww" "$LOCAL_BIN/eww"
+      printf '[install] linked eww into %s\n' "$LOCAL_BIN"
+    fi
     return 0
   fi
 
   printf '[install] warning: cargo build of eww failed\n'
+  printf '[install] See https://elkowar.github.io/eww/install.html for manual instructions.\n'
   return 1
+}
+
+# Without the timer the updates counter in polybar / the profilecard never
+# gets a value written to ~/.cache/Updates.txt.
+enable_user_units() {
+  if ! command -v systemctl >/dev/null 2>&1; then
+    printf '[install] systemctl not available, skipping user timer setup\n'
+    return 0
+  fi
+
+  systemctl --user daemon-reload >/dev/null 2>&1 || true
+  if systemctl --user enable --now pyr-updates.timer >/dev/null 2>&1; then
+    printf '[install] enabled pyr-updates.timer\n'
+  else
+    printf '[install] warning: could not enable pyr-updates.timer\n'
+    printf '[install] enable it later with: systemctl --user enable --now pyr-updates.timer\n'
+  fi
+
+  # Populate the counter once so the module is not empty until the first tick.
+  "$CONFIG_DIR/bspwm/bin/Updates" --sync-polybar >/dev/null 2>&1 || true
 }
 
 write_rice_file() {
@@ -287,14 +417,24 @@ Usage: $0 [options]
 
 Options:
   --skip-packages          Skip apt package installation.
+  --skip-eww               Do not build eww from source (the widgets stay unavailable).
   --download-fonts URL     Download and install fonts from a ZIP URL.
   --download-wallpapers URL  Download extra wallpapers from a ZIP URL into the Pyr walls folder.
   --help                   Show this help message.
 EOF
 }
 
+require_arg() {
+  if [ "$#" -lt 2 ] || [ -z "$2" ]; then
+    printf '[install] ERROR: %s requires an argument\n' "$1"
+    usage
+    exit 1
+  fi
+}
+
 main() {
   local install_packages=true
+  local build_eww=true
   local download_fonts_url=""
   local download_wallpapers_url=""
 
@@ -304,11 +444,17 @@ main() {
         install_packages=false
         shift
         ;;
+      --skip-eww)
+        build_eww=false
+        shift
+        ;;
       --download-fonts)
+        require_arg "$1" "${2:-}"
         download_fonts_url="$2"
         shift 2
         ;;
       --download-wallpapers)
+        require_arg "$1" "${2:-}"
         download_wallpapers_url="$2"
         shift 2
         ;;
@@ -332,16 +478,14 @@ main() {
 
   install_configs
   install_eww_config
+  install_misc
   ensure_bin_executables
   install_fonts
 
-  if ! command -v eww >/dev/null 2>&1; then
-    if install_eww_via_cargo; then
-      printf '[install] eww installed via cargo\n'
-    else
-      printf '[install] warning: eww is not installed. To install manually, install rustup and cargo, then build from https://github.com/elkowar/eww\n'
-      printf '[install] See https://github.com/elkowar/eww#building for details.\n'
-    fi
+  if [ "$build_eww" = true ]; then
+    install_eww || true
+  else
+    printf '[install] skipping eww install (--skip-eww); widgets will not open.\n'
   fi
 
   if [ -n "$download_fonts_url" ]; then
@@ -353,6 +497,7 @@ main() {
   fi
 
   write_rice_file
+  enable_user_units
   set_shell
   apply_theme
 

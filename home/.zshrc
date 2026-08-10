@@ -108,7 +108,7 @@ function dir_icon {
   fi
 }
 
-PS1='%B%F{blue}%f%b  %B%F{magenta}%n%f%b $(dir_icon)  %B%F{red}%~%f%b${vcs_info_msg_0_} %(?.%B%F{green}.%F{red})%f%b '
+PS1='%B%F{208}%f%b  %B%F{magenta}%n%f%b $(dir_icon)  %B%F{red}%~%f%b${vcs_info_msg_0_} %(?.%B%F{green}.%F{red})%f%b '
 
 #  ┌─┐┬  ┬ ┬┌─┐┬┌┐┌┌─┐
 #  ├─┘│  │ ││ ┬││││└─┐
@@ -153,13 +153,18 @@ fi
 #  ┌─┐┬  ┬┌─┐┌─┐
 #  ├─┤│  │├─┤└─┐
 #  ┴ ┴┴─┘┴┴ ┴└─┘
-alias mirrors="sudo reflector --verbose --latest 5 --country 'United States' --age 6 --sort rate --save /etc/pacman.d/mirrorlist"
-alias update="paru -Syu --nocombinedupgrade"
-alias grub-update="sudo grub-mkconfig -o /boot/grub/grub.cfg"
+alias update="sudo apt update && sudo apt full-upgrade"
+alias cleanup="sudo apt autoremove --purge && sudo apt autoclean"
+alias grub-update="sudo update-grub"
 
 alias music="ncmpcpp"
 
-alias cat="/bin/batcat --theme=base16"
+# Debian ships bat as `batcat`; only shadow `cat` when it is actually present.
+if command -v batcat >/dev/null 2>&1; then
+  alias cat="batcat --theme=base16"
+elif command -v bat >/dev/null 2>&1; then
+  alias cat="bat --theme=base16"
+fi
 if command -v eza >/dev/null 2>&1; then
   alias ls='eza --icons=always --color=always'
   alias la='eza --icons=always --color=always -a'

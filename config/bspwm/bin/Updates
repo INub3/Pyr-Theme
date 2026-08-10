@@ -4,14 +4,18 @@
 # Repo:   https://github.com/gh0stzk/dotfiles
 # Date:   06.04.2025 09:41:28
 #
-# ArchUpdates - Script to check for new updates in ARCH and AUR
-#               and sync updates module in polybar/Eww.
+# Updates - Check for pending apt upgrades and sync the updates module
+#           in polybar / the eww profilecard.
 # Features:
-#   ✔ Shows the number of updates available in polybar/eww
-#   ✔ Used in a pacman hook to update the polybar-module/eww-poll. --sync-polybar
+#   ✔ Shows the number of available upgrades in polybar/eww
+#   ✔ Used by the pyr-updates systemd timer. --sync-polybar
+#
+# Note: the count reflects the package lists as of the last `apt update`.
+#       Refreshing them requires root, so this script never does it itself;
+#       Debian keeps them current through APT::Periodic / unattended-upgrades.
 #
 # Dependencies:
-#   → pacman-contrib, paru, polybar
+#   → apt, polybar
 #
 # Copyright (C) 2021-2026 gh0stzk <z0mbi3.zk@protonmail.com>
 # Licensed under GPL-3.0 license
@@ -21,28 +25,26 @@ UPDATE_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/Updates.txt"
 
 # Main verification function
 check_updates() {
-    # Get official updates
-    official=0
-    if updates=$(checkupdates 2>/dev/null); then
-        official=$(echo "$updates" | wc -l)
+    # `apt list --upgradable` needs no root; drop the "Listing..." header and
+    # any blank line so the count is exactly the number of packages.
+    updates=$(apt list --upgradable 2>/dev/null | sed -e '1{/^Listing/d}' -e '/^$/d')
+
+    if [ -n "$updates" ]; then
+        total=$(printf '%s\n' "$updates" | wc -l)
+    else
+        total=0
     fi
 
-    # Get AUR updates
-    aur=0
-    if aur_updates=$(paru -Qua 2>/dev/null); then
-        aur=$(echo "$aur_updates" | wc -l)
-    fi
-
-    # Calculate and write the total to the file
-    total=$((official + aur))
+    mkdir -p "$(dirname "$UPDATE_FILE")"
     echo "$total" > "$UPDATE_FILE"
 
-    # Sends the signal to polybar-module/eww-poll to update the data.
+    # Sends the signal to the polybar module / eww poll to update the data.
     if pgrep -x polybar >/dev/null; then
         polybar-msg action updates hook 0 >/dev/null 2>&1
-    else
-        read -r current_rice < "$HOME"/.config/bspwm/.rice
-        eww -c "$HOME/.config/bspwm/rices/${current_rice}/bar" poll UPDATES
+    fi
+
+    if command -v eww >/dev/null 2>&1; then
+        eww -c "$HOME/.config/eww" poll UPDATES >/dev/null 2>&1 || true
     fi
 }
 
@@ -50,16 +52,7 @@ list_updates() {
     check_updates
     if [ "$total" -gt 0 ]; then
         printf "\033[1m\033[33mThere are %s updates available:\033[0m\n" "$total"
-
-        if [ -n "$updates" ]; then
-            printf "\n\033[1m\033[34mOfficial updates:\033[0m\n"
-            printf "%s\n" "$updates" | sed 's/->/\x1b[32;1m\x1b[0m/g'
-        fi
-
-        if [ -n "$aur_updates" ]; then
-            printf "\n\033[1m\033[34mAUR updates:\033[0m\n"
-            printf "%s\n" "$aur_updates" | sed 's/->/\x1b[32;1m\x1b[0m/g'
-        fi
+        printf "\n%s\n" "$updates"
     else
         printf "\033[1m\033[32m¡Your system is already updated!\033[0m\n"
     fi
@@ -67,7 +60,7 @@ list_updates() {
 }
 
 # Execute it accordingly
-case "$1" in
+case "${1:-}" in
     --sync-polybar)
         check_updates ;;
     --print-updates)

@@ -10,6 +10,10 @@
 alt + F1
     OpenApps --KeyHelp
 
+# Eww widgets: profile card and music player
+alt + {F2,F3}
+    OpenApps {--usercard,--player}
+
 ############################
 # ----- Applications ----- #
 ############################
@@ -74,7 +78,7 @@ super + alt + c
 
 # Screenshot
 super + alt + s
-    OpenApps --screenshot
+    flameshot gui
 
 # PowerMenu
 super + alt + p
@@ -175,11 +179,11 @@ super + {Left,Right}
     bspc desktop -f {prev,next}
 
 # Focus or send to the given desktop
-super + {_,ctrl + }{1-9,0}
+super + {_,shift + }{1-9,0}
     bspc {desktop -f,node -d} '^{1-9,10}'
 
 # Send focused Node to workspace directionally
-super + ctrl + {Left,Right}
+super + shift + {Left,Right}
     bspc node -d {prev,next} '--follow'
 
 # Node switcher
@@ -229,7 +233,8 @@ super + ctrl + {plus,minus}
     }
 
 # Move floating window
-super + shift + {Left,Down,Up,Right}
+# (moved off super + shift, which now sends nodes to another desktop)
+super + ctrl + {Left,Down,Up,Right}
     bspc node -v {-20 0,0 20,0 -20,20 0}
 
 # ----- Multi operation functions ----- #
