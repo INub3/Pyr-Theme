@@ -4,9 +4,9 @@
 # Repo:    https://github.com/gh0stzk/dotfiles
 # Date:    03.02.2025 20:31:58
 #
-# HideBar - Hide polybar or eww bars for gh0stzk dotfiles
+# HideBar - Hide the polybar bar for gh0stzk dotfiles
 # Dependencies:
-#   → bspwm, polybar, eww, xrandr
+#   → bspwm, polybar
 #
 # Copyright (C) 2021-2026 gh0stzk <z0mbi3.zk@protonmail.com>
 # Licensed under GPL-3.0 license
@@ -15,7 +15,6 @@
 # Configuration
 read -r current_rice <"$HOME"/.config/bspwm/.rice
 THEME_CONFIG="$HOME/.config/bspwm/rices/$current_rice/theme-config.bash"
-eww_bar_path="$HOME/.config/bspwm/rices/$current_rice/bar"
 
 # Get padding value from theme-config.bash
 get_paddings() {
@@ -35,29 +34,8 @@ set_padding() {
     bspc config right_padding "$4"
 }
 
-# Upstream shipped rices whose bar was built with eww; Pyr uses polybar, but a
-# rice is still free to provide its own eww bar under rices/<rice>/bar.
-is_eww_theme() {
-    [ -d "$eww_bar_path" ]
-}
-
 toggle_bar() {
-    action="$1"
-
-    if is_eww_theme; then
-        if [ "$action" = "hide" ]; then
-            eww -c "$eww_bar_path" close-all
-        else
-            monitors=$(xrandr --listmonitors | awk 'NR>1 {print $4}')
-            count=0
-            for m in $monitors; do
-                eww -c "$eww_bar_path" open bar --id "$m" --arg monitor="$m" --screen "$count"
-                count=$((count + 1))
-            done
-        fi
-    else
-        polybar-msg cmd "$action"
-    fi
+    polybar-msg cmd "$1"
 }
 
 toggle_bars() {

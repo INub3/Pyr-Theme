@@ -6,9 +6,6 @@
 # from bspwm's own socket, so this listener only nudges the custom/ipc
 # modules that cannot notice window changes on their own.
 #
-# It deliberately does NOT run `eww reload`: none of the eww widgets
-# (cheatsheet, player, profilecard) display bspwm state, and reloading the
-# whole config on every focus change re-renders every open window.
 # =============================================================
 
 export PATH="$HOME/.config/bspwm/bin:$HOME/.local/bin:$PATH"

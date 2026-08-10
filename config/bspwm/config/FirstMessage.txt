@@ -3,7 +3,6 @@ Hello, welcome to BSPWM
 Maybe it's your first time using a window manager or maybe not, here are some tips so you don't feel so lost.
   · You can always visit my Wiki https://github.com/gh0stzk/dotfiles/wiki
 
-    - (Alt + F1) For a list of all keyboard shortcuts (If it doesn't open, please visit https://github.com/gh0stzk/dotfiles/wiki/Installing-EWW)
     - (Super + Enter) Opens the terminal
     - (Super + x) To close windows/apps.
     - (Super + Space bar) Opens the apps menu
@@ -28,7 +27,7 @@ Remember that I tried to make the environment in a MINIMALIST way but giving you
 
     - And other features such as hiding the bars (super + alt + h) and (super + alt + u) to show them again.
 
-Please check the menu of all keyboard shortcuts by pressing "Alt + F1" or directly by looking at the file ~/.config/bspwm/sxhkdrc from this file you can create your own keyboard shortcuts or modify the existing ones.
+You can see every keyboard shortcut, and create or modify your own, in the file ~/.config/bspwm/config/sxhkdrc
 
 If you have a question or a problem or if you find a bug, you can always create a post at https://github.com/gh0stzk/dotfiles/issues
 

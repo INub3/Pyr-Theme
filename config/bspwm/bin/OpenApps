@@ -8,8 +8,6 @@
 # Licensed under GPL-3.0 license
 # =============================================================
 
-WIDGET_DIR="$HOME/.config/eww"
-
 case "$1" in
 	--menu)
 		RofiLauncher --launcher
@@ -83,16 +81,6 @@ case "$1" in
 		;;
 	--soundcontrol)
 		pavucontrol
-		;;
-		# Eww Widgets
-	--KeyHelp)
-		eww -c "$WIDGET_DIR" open --toggle csheet
-		;;
-	--usercard)
-		eww -c "$WIDGET_DIR" open --toggle launchermenu
-		;;
-	--player)
-		eww -c "$WIDGET_DIR" open --toggle music
 		;;
 	*)
 		echo "Invalid Option"

@@ -1,7 +1,7 @@
 # Pyr Dotfiles for BSPWM
 
 Una configuración ligera y funcional para BSPWM sobre Debian/Parrot, usando:
-- `bspwm`, `sxhkd`, `picom`, `polybar`, `feh`, `kitty`, `dunst`, `rofi`, `jgmenu`, `eww`
+- `bspwm`, `sxhkd`, `picom`, `polybar`, `feh`, `kitty`, `dunst`, `rofi`, `jgmenu`
 - Tema único: `Pyr`
 - Terminal predeterminado: `kitty`
 
@@ -16,7 +16,6 @@ bash ./install.sh
 
 Opciones adicionales:
 - `bash ./install.sh --skip-packages`  # omite instalación de paquetes apt
-- `bash ./install.sh --skip-eww`  # no compila eww desde fuentes (los widgets no estarán disponibles)
 - `bash ./install.sh --download-fonts <URL>`  # descarga e instala fuentes desde un ZIP remoto
 - `bash ./install.sh --download-wallpapers <URL>`  # descarga y extrae fondos adicionales en la carpeta del tema
 
@@ -27,7 +26,7 @@ sudo apt install bspwm sxhkd picom polybar feh kitty dunst rofi jgmenu \
   xsettingsd x11-xserver-utils x11-utils x11-xkb-utils xdotool xclip \
   libnotify-bin lxpolkit lightdm \
   mpd mpc ncmpcpp pamixer pavucontrol playerctl ffmpeg \
-  brightnessctl network-manager bluez rfkill acpi iputils-ping \
+  brightnessctl network-manager bluez rfkill iputils-ping \
   flameshot maim imagemagick i3lock \
   zsh neovim geany bat eza jq bc pass gnupg \
   python3 python3-gi gir1.2-gtk-3.0 gir1.2-nm-1.0 python3-neovim \
@@ -38,7 +37,7 @@ sudo apt install bspwm sxhkd picom polybar feh kitty dunst rofi jgmenu \
 
 Opcionales (el escritorio funciona sin ellos, con funciones degradadas):
 ```sh
-sudo apt install qogir-icon-theme clipcat yazi redshift simple-mtpfs mpv \
+sudo apt install qogir-icon-theme clipcat yazi simple-mtpfs mpv \
   zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search fzf python3-pip
 ```
 
@@ -63,24 +62,9 @@ Asegura que tu gestor de sesión use BSPWM y, una vez instalado, inicia sesión 
 - La configuración de `nvim` está en `~/.config/nvim` y usa `lazy.nvim` para instalar plugins automáticamente en el primer arranque.
 - El shell `zsh` se carga desde `~/.zshrc`; si usas `zsh` por defecto, verás la configuración de completado y prompt incluida.
 
-## Widgets eww
-
-Los widgets (`~/.config/eww`) son tres ventanas flotantes; la barra la dibuja polybar, no eww.
-
-| Widget | Atajo |
-|---|---|
-| Cheatsheet de teclas | `alt + F1` |
-| Tarjeta de perfil | `alt + F2` |
-| Reproductor | `alt + F3` |
-
-También están disponibles desde el menú de jgmenu (click derecho en el escritorio).
-
-`eww` no existe en los repositorios Debian, así que `install.sh` lo compila desde fuentes con `cargo`
-(puede tardar más de 10 minutos) y lo enlaza en `~/.local/bin`. Usa `--skip-eww` para omitirlo.
-
 ## Actualizaciones
 
-El contador de actualizaciones de la barra y de la tarjeta de perfil lo alimenta
+El contador de actualizaciones de la barra lo alimenta
 `~/.config/bspwm/bin/Updates`, disparado por el timer de usuario `pyr-updates.timer`, que el
 instalador habilita. El recuento refleja las listas de paquetes tal como estaban en el último
 `apt update` (refrescarlas requiere root, así que el script nunca lo hace por su cuenta).

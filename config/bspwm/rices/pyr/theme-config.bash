@@ -26,7 +26,6 @@ cyanb="#7dcfff"
 whiteb="#c0caf5"
 
 accent_color="#222330"
-arch_icon="#0f94d2"
 
 # Bspwm options
 BORDER_WIDTH="0"		# Bspwm border

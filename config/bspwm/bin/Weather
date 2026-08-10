@@ -4,7 +4,7 @@
 # Repo:    https://github.com/gh0stzk/dotfiles
 # Date:    21.11.2025
 #
-# Weather - Weather Monitor for Polybar/Eww
+# Weather - Weather Monitor for Polybar
 # Features:
 #   ✔ Obtaining data in real time via API
 #   ✔ Smart cache system (15 minutes)
@@ -13,7 +13,7 @@
 #
 # Dependencies:
 #   → Core: jq, curl
-#   → Optionals: Polybar, Eww
+#   → Optionals: Polybar
 #
 # Copyright (C) 2021-2026 gh0stzk <z0mbi3.zk@protonmail.com>
 # Licensed under GPL-3.0 license

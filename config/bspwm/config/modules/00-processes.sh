@@ -8,19 +8,17 @@ wait_for_termination() {
     done
 }
 
-# Kill polybar or eww bars when you switch from the current theme to another
+# Kill the bar before reloading the theme
 if pgrep -x polybar >/dev/null; then
     polybar-msg cmd quit >/dev/null 2>&1
     wait_for_termination "polybar"
-elif pgrep -f "eww.*bar" >/dev/null; then
-    pkill -f "eww.*bar"
-    wait_for_termination "eww.*bar"
 fi
 
-# Kill the fix for eww in fullscreen, we don't need it in themes with polybar
-if pgrep -f "bspc subscribe node_state" >/dev/null; then
-    pkill -f "bspc subscribe node_state"
-    wait_for_termination "bspc subscribe node_state"
+# 07-bar.sh starts a fresh bspc-listener on every theme reload, so drop the
+# previous one first instead of stacking duplicates.
+if pgrep -f "bspwm/bin/bspc-listener" >/dev/null; then
+    pkill -f "bspwm/bin/bspc-listener"
+    wait_for_termination "bspwm/bin/bspc-listener"
 fi
 
 # Kill animated wallpaper if is active

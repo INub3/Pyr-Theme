@@ -5,9 +5,9 @@
 # Date:   06.04.2025 09:41:28
 #
 # Updates - Check for pending apt upgrades and sync the updates module
-#           in polybar / the eww profilecard.
+#           in polybar.
 # Features:
-#   ✔ Shows the number of available upgrades in polybar/eww
+#   ✔ Shows the number of available upgrades in polybar
 #   ✔ Used by the pyr-updates systemd timer. --sync-polybar
 #
 # Note: the count reflects the package lists as of the last `apt update`.
@@ -38,13 +38,9 @@ check_updates() {
     mkdir -p "$(dirname "$UPDATE_FILE")"
     echo "$total" > "$UPDATE_FILE"
 
-    # Sends the signal to the polybar module / eww poll to update the data.
+    # Sends the signal to the polybar module to update the data.
     if pgrep -x polybar >/dev/null; then
         polybar-msg action updates hook 0 >/dev/null 2>&1
-    fi
-
-    if command -v eww >/dev/null 2>&1; then
-        eww -c "$HOME/.config/eww" poll UPDATES >/dev/null 2>&1 || true
     fi
 }
 

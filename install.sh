@@ -20,9 +20,9 @@ CORE_PACKAGES=(
   xsettingsd x11-xserver-utils x11-utils x11-xkb-utils xdotool xclip
   # Notifications, polkit agent and session
   libnotify-bin lxpolkit lightdm
-  # Audio / media stack driving Volume, MediaControl and the eww player
+  # Audio / media stack driving Volume, MediaControl and the mpd modules
   mpd mpc ncmpcpp pamixer pavucontrol playerctl ffmpeg
-  # Hardware controls used by the profilecard widget and the polybar modules
+  # Hardware controls used by the polybar modules
   brightnessctl network-manager bluez rfkill iputils-ping
   # Screenshots, screen locking and wallpaper tooling
   flameshot maim imagemagick i3lock
@@ -38,17 +38,18 @@ CORE_PACKAGES=(
 
 # Nice to have: the desktop degrades gracefully when these are missing.
 OPTIONAL_PACKAGES=(
-  qogir-icon-theme clipcat yazi redshift simple-mtpfs mpv
+  qogir-icon-theme clipcat yazi simple-mtpfs mpv
   zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search fzf python3-pip
-)
-
-# Only pulled in when eww has to be compiled from source (see install_eww).
-EWW_BUILD_PACKAGES=(
-  rustc cargo pkg-config libglib2.0-dev libdbusmenu-glib-dev libdbusmenu-gtk3-dev libgtk-3-dev
 )
 
 apt_package_available() {
   apt-cache show "$1" >/dev/null 2>&1
+}
+
+# `dpkg -s` also succeeds for packages that were removed but not purged
+# (Status: deinstall ok config-files), so check the status field itself.
+pkg_installed() {
+  dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q '^install ok installed$'
 }
 
 # install_pkg_group <label> <name-of-array> [name-of-failed-array]
@@ -61,7 +62,7 @@ install_pkg_group() {
   printf '\n[install] Installing %s packages...\n' "$label"
   local pkg
   for pkg in "${_pkgs[@]}"; do
-    if dpkg -s "$pkg" >/dev/null 2>&1; then
+    if pkg_installed "$pkg"; then
       printf '[install] %s already installed\n' "$pkg"
       continue
     fi
@@ -285,72 +286,12 @@ install_misc() {
   fi
 }
 
-install_eww_config() {
-  local src="$REPO_ROOT/config/bspwm/eww"
-  local dest="$CONFIG_DIR/eww"
-  if [ -d "$src" ]; then
-    backup_path "$dest"
-    copy_path "$src" "$dest"
-    if [ -d "$CONFIG_DIR/bspwm/eww" ]; then
-      rm -rf "$CONFIG_DIR/bspwm/eww"
-      printf '[install] removed legacy eww config directory %s
-' "$CONFIG_DIR/bspwm/eww"
-    fi
-  fi
-}
-
 ensure_bin_executables() {
-  local dir
-  # The eww widgets shell out to their own scripts; a lost +x bit breaks the
-  # whole profilecard silently, so re-assert it on every install.
-  for dir in "$CONFIG_DIR/bspwm/bin" "$CONFIG_DIR/eww/profilecard/scripts"; do
-    if [ -d "$dir" ]; then
-      find "$dir" -maxdepth 1 -type f -exec chmod +x '{}' \; || true
-      printf '[install] ensured executables in: %s\n' "$dir"
-    fi
-  done
-}
-
-# Debian ships no eww package, so the only supported route is a source build.
-# It takes a long while, hence --skip-eww to opt out.
-install_eww() {
-  export PATH="$HOME/.cargo/bin:$PATH"
-  if command -v eww >/dev/null 2>&1; then
-    printf '[install] eww already available: %s\n' "$(command -v eww)"
-    return 0
+  local bin_dir="$CONFIG_DIR/bspwm/bin"
+  if [ -d "$bin_dir" ]; then
+    find "$bin_dir" -maxdepth 1 -type f -exec chmod +x '{}' \; || true
+    printf '[install] ensured executables in: %s\n' "$bin_dir"
   fi
-
-  # A packaged eww would be preferable; check in case the repo/derivative has one.
-  if command -v apt-get >/dev/null 2>&1 && apt_package_available eww; then
-    printf '[install] installing eww from apt\n'
-    sudo apt-get install -y eww && return 0
-  fi
-
-  printf '\n[install] eww is not packaged for Debian; building it from source.\n'
-  printf '[install] This can take 10+ minutes. Re-run with --skip-eww to skip it.\n'
-
-  install_pkg_group "eww build" EWW_BUILD_PACKAGES
-
-  if ! command -v cargo >/dev/null 2>&1 || ! command -v rustc >/dev/null 2>&1; then
-    printf '[install] warning: cargo/rustc unavailable, cannot build eww\n'
-    return 1
-  fi
-
-  if cargo install --git https://github.com/elkowar/eww --locked --no-default-features --features x11; then
-    printf '[install] installed eww into %s\n' "$HOME/.cargo/bin"
-    # The bspwm session does not inherit ~/.cargo/bin from the login shell,
-    # so expose eww through ~/.local/bin, which bspwmrc puts on PATH.
-    if [ -x "$HOME/.cargo/bin/eww" ]; then
-      mkdir -p "$LOCAL_BIN"
-      ln -sf "$HOME/.cargo/bin/eww" "$LOCAL_BIN/eww"
-      printf '[install] linked eww into %s\n' "$LOCAL_BIN"
-    fi
-    return 0
-  fi
-
-  printf '[install] warning: cargo build of eww failed\n'
-  printf '[install] See https://elkowar.github.io/eww/install.html for manual instructions.\n'
-  return 1
 }
 
 # Without the timer the updates counter in polybar / the profilecard never
@@ -417,7 +358,6 @@ Usage: $0 [options]
 
 Options:
   --skip-packages          Skip apt package installation.
-  --skip-eww               Do not build eww from source (the widgets stay unavailable).
   --download-fonts URL     Download and install fonts from a ZIP URL.
   --download-wallpapers URL  Download extra wallpapers from a ZIP URL into the Pyr walls folder.
   --help                   Show this help message.
@@ -434,7 +374,6 @@ require_arg() {
 
 main() {
   local install_packages=true
-  local build_eww=true
   local download_fonts_url=""
   local download_wallpapers_url=""
 
@@ -442,10 +381,6 @@ main() {
     case "$1" in
       --skip-packages)
         install_packages=false
-        shift
-        ;;
-      --skip-eww)
-        build_eww=false
         shift
         ;;
       --download-fonts)
@@ -477,16 +412,9 @@ main() {
   fi
 
   install_configs
-  install_eww_config
   install_misc
   ensure_bin_executables
   install_fonts
-
-  if [ "$build_eww" = true ]; then
-    install_eww || true
-  else
-    printf '[install] skipping eww install (--skip-eww); widgets will not open.\n'
-  fi
 
   if [ -n "$download_fonts_url" ]; then
     download_fonts "$download_fonts_url"

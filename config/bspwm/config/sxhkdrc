@@ -6,14 +6,6 @@
 #  ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝ ╚═════╝
 #	gh0stzk		https://github.com/gh0stzk/dotfiles
 
-# Show help
-alt + F1
-    OpenApps --KeyHelp
-
-# Eww widgets: profile card and music player
-alt + {F2,F3}
-    OpenApps {--usercard,--player}
-
 ############################
 # ----- Applications ----- #
 ############################
@@ -114,7 +106,7 @@ super + alt + o
 ctrl + super + alt + {p,r,q,l,k,s}
     {systemctl poweroff, systemctl reboot,bspc quit,ScreenLocker,xkill,SoftReload}
 
-# Hide/Show Bar (Polybar and/or eww)
+# Hide/Show Bar
 super + alt + {h,u}
     HideBar {-h,-u}
 

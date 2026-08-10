@@ -72,17 +72,11 @@ run picom --config "${HOME}"/.config/bspwm/config/picom.conf
 # Launch xsettingsd
 run xsettingsd --config="${HOME}"/.config/bspwm/config/xsettingsd >/dev/null 2>&1
 
-# Launch eww daemon
-pidof -q eww || { eww -c "${HOME}"/.config/eww daemon & }
-
 # Launch clipboard daemon
 run clipcatd
 
-# Launch MPD listener to update polybar/eww on track changes
+# Launch MPD listener to refresh the polybar mpd modules on track changes
 run "$HOME"/.config/bspwm/bin/mpd-listener
-
-# Launch Eww music updater (event-driven updates for player widgets)
-run "$HOME"/.config/bspwm/bin/eww-music-updater
 
 # Launch polkit
 run lxpolkit

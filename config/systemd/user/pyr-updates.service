@@ -1,5 +1,5 @@
 [Unit]
-Description=Check for available apt upgrades & sync the polybar/eww updates module
+Description=Check for available apt upgrades & sync the polybar updates module
 
 [Service]
 Type=oneshot
