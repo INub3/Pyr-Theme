@@ -45,7 +45,7 @@ CORE_PACKAGES=(
 # A browser is personal, so firefox-esr is only a fallback: OpenApps --browser
 # picks up firefox, firefox-esr, chromium or brave, whichever is present.
 OPTIONAL_PACKAGES=(
-  qogir-icon-theme simple-mtpfs mpv firefox-esr
+  simple-mtpfs mpv firefox-esr
   zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search fzf python3-pip
 )
 

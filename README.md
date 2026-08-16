@@ -38,7 +38,7 @@ sudo apt install bspwm sxhkd picom polybar feh kitty dunst rofi jgmenu \
 
 Opcionales (el escritorio funciona sin ellos, con funciones degradadas):
 ```sh
-sudo apt install qogir-icon-theme simple-mtpfs mpv \
+sudo apt install simple-mtpfs mpv firefox-esr \
   zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search fzf python3-pip
 ```
 

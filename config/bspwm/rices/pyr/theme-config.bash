@@ -93,9 +93,13 @@ sl_verify="${green}"
 # These names must match a directory in /usr/share/themes or ~/.themes
 # (and /usr/share/icons or ~/.icons for the icon and cursor themes).
 # A name that does not exist makes GTK fall back to Adwaita without warning.
-gtk_theme="TokyoNight-zk"
+# Alternatives present on a stock Debian/Parrot: Adwaita-dark, Arc-Darker,
+# Breeze-Dark, ARK-Dark, Icy-Dark, HackTheBox.
+gtk_theme="Arc-Dark"
 gtk_icons="Papirus-Dark"
-gtk_cursor="Qogirr-Dark"
+# Cursor themes are directories under /usr/share/icons that contain cursors/;
+# Adwaita is always present. breeze_cursors is the other one Debian ships.
+gtk_cursor="Adwaita"
 gtk_font="CascadiaCode 10"
 gtk_prefer_dark="1"		# GTK3 only: pick the dark variant of the theme
 gtk_hintstyle="hintslight"	# none|hintslight|hintmedium|hintfull

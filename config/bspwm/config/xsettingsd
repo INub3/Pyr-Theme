@@ -1,6 +1,6 @@
-Net/ThemeName "TokyoNight-zk"
+Net/ThemeName "Arc-Dark"
 Net/IconThemeName "Papirus-Dark"
-Gtk/CursorThemeName "Qogirr-Dark"
+Gtk/CursorThemeName "Adwaita"
 Gtk/FontName "CascadiaCode 10"
 Gtk/DecorationLayout ":"
 Xft/Hinting 1
