@@ -16,6 +16,7 @@ bash ./install.sh
 
 Opciones adicionales:
 - `bash ./install.sh --skip-packages`  # omite instalación de paquetes apt
+- `bash ./install.sh --skip-extras`  # no instala yazi ni clipcat desde sus fuentes upstream
 - `bash ./install.sh --download-fonts <URL>`  # descarga e instala fuentes desde un ZIP remoto
 - `bash ./install.sh --download-wallpapers <URL>`  # descarga y extrae fondos adicionales en la carpeta del tema
 
@@ -27,7 +28,7 @@ sudo apt install bspwm sxhkd picom polybar feh kitty dunst rofi jgmenu \
   libnotify-bin lxpolkit lightdm \
   mpd mpc ncmpcpp pamixer pavucontrol playerctl ffmpeg \
   brightnessctl network-manager bluez rfkill iputils-ping \
-  flameshot maim imagemagick i3lock \
+  flameshot maim imagemagick i3lock xxhash \
   zsh neovim geany bat eza jq bc pass gnupg \
   python3 python3-gi gir1.2-gtk-3.0 gir1.2-nm-1.0 python3-neovim \
   git curl nodejs npm ripgrep fd-find unzip ca-certificates \
@@ -37,9 +38,22 @@ sudo apt install bspwm sxhkd picom polybar feh kitty dunst rofi jgmenu \
 
 Opcionales (el escritorio funciona sin ellos, con funciones degradadas):
 ```sh
-sudo apt install qogir-icon-theme clipcat yazi simple-mtpfs mpv \
+sudo apt install qogir-icon-theme simple-mtpfs mpv \
   zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search fzf python3-pip
 ```
+
+### yazi y clipcat
+
+Debian no empaqueta ninguno de los dos, así que `install.sh` los instala desde sus fuentes
+oficiales. Se agrupan bajo `--skip-extras` por si prefieres no añadir orígenes de terceros.
+
+- **yazi**: añade su repositorio APT (`https://yazi-rs.github.io/builds/`, suite `stable`) con su
+  clave en `/usr/share/keyrings/yazi-keyring.gpg`. A partir de ahí se actualiza con `apt upgrade`.
+- **clipcat**: descarga el `.deb` de la última release de [xrelkd/clipcat](https://github.com/xrelkd/clipcat/releases)
+  y lo instala con `apt install`, que resuelve dependencias. **No se actualiza solo**: para subir de
+  versión hay que volver a ejecutar el instalador.
+
+Ambos detectan la arquitectura y admiten `amd64` y `arm64`.
 
 El instalador copia la configuración de `config/bspwm`, `config/clipcat`, `config/geany`, `config/gtk-3.0`, `config/kitty`, `config/mpd`, `config/ncmpcpp`, `config/nvim`, `config/systemd`, `config/yazi` y `config/zsh`, además de `home/.zshrc`, `home/.gtkrc-2.0` y el contenido de `misc/` (scripts a `~/.local/bin`, ascii art a `~/.local/share/asciiart` y los lanzadores a `~/.local/share/applications`).
 
@@ -77,6 +91,24 @@ Updates --print-updates
 ## Notas
 
 - Ajusta los archivos en `~/.config/bspwm/rices/pyr` si deseas cambiar colores, fondos o comportamiento.
+
+### Tema GTK
+
+Las variables `gtk_*` de `theme-config.bash` gobiernan las tres configuraciones de GTK a la vez
+(`xsettingsd` para GTK3 en caliente, `~/.config/gtk-3.0/settings.ini` como respaldo y
+`~/.gtkrc-2.0` para GTK2), así que basta con cambiarlas y ejecutar `Theme.sh`:
+
+```sh
+gtk_theme="Arc-Dark"        # debe existir en /usr/share/themes o ~/.themes
+gtk_icons="Papirus-Dark"
+gtk_cursor="Adwaita"
+gtk_font="CascadiaCode 10"
+gtk_prefer_dark="1"         # solo GTK3: variante oscura del tema
+```
+
+Si el tema indicado no existe, GTK cae a Adwaita; `Theme.sh` avisa por `stderr` cuando ocurre.
+El tema GTK solo afecta a las aplicaciones GTK (pavucontrol, thunar, geany, los diálogos de
+Firefox): la barra, los menús de rofi, dunst y kitty tienen su propia configuración.
 - Si no usas `LightDM`, configura tu gestor de inicio para lanzar `bspwm`.
 - `ScreenLocker` usa las opciones de color de **i3lock-color**, que Debian no empaqueta. Con el
   `i3lock` estándar el bloqueo funciona pero sin el anillo ni los colores del tema.

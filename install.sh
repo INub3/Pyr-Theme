@@ -25,7 +25,8 @@ CORE_PACKAGES=(
   # Hardware controls used by the polybar modules
   brightnessctl network-manager bluez rfkill iputils-ping
   # Screenshots, screen locking and wallpaper tooling
-  flameshot maim imagemagick i3lock
+  # xxhash provides xxh64sum, which WallSelect uses to validate its preview cache
+  flameshot maim imagemagick i3lock xxhash
   # Shell, editors and CLI tools referenced by .zshrc / Term / RofiPass
   zsh neovim geany bat eza jq bc pass gnupg
   # Runtime for the Python helpers (RiceEditor, NetManagerDM)
@@ -37,10 +38,18 @@ CORE_PACKAGES=(
 )
 
 # Nice to have: the desktop degrades gracefully when these are missing.
+# yazi and clipcat are NOT here: Debian does not package them, so they get their
+# own installers further down (see install_extras).
 OPTIONAL_PACKAGES=(
-  qogir-icon-theme clipcat yazi simple-mtpfs mpv
+  qogir-icon-theme simple-mtpfs mpv
   zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search fzf python3-pip
 )
+
+# Upstream sources for the two tools Debian does not ship.
+YAZI_KEYRING_URL="https://yazi-rs.github.io/builds/yazi-keyring.gpg"
+YAZI_REPO_URL="https://yazi-rs.github.io/builds/"
+YAZI_SUITE="stable"
+CLIPCAT_REPO="xrelkd/clipcat"
 
 apt_package_available() {
   apt-cache show "$1" >/dev/null 2>&1
@@ -96,6 +105,128 @@ install_from_apt() {
     printf '  %s\n' "${MISSING_PACKAGES[@]}"
     printf '[install] Please install missing packages manually and rerun the script.\n'
   fi
+}
+
+# ---------------------------------------------------------------------------
+# Tools Debian does not package. Both pull from upstream, so they are grouped
+# behind --skip-extras for anyone who would rather not add third-party sources.
+# ---------------------------------------------------------------------------
+
+# Yazi ships its own APT repository (suites: stable, nightly; amd64 + arm64).
+install_yazi() {
+  if command -v yazi >/dev/null 2>&1; then
+    printf '[install] yazi already available: %s\n' "$(command -v yazi)"
+    return 0
+  fi
+
+  local arch
+  arch="$(dpkg --print-architecture)"
+  case "$arch" in
+    amd64|arm64) ;;
+    *)
+      printf '[install] warning: the yazi repository has no %s build, skipping\n' "$arch"
+      return 1
+      ;;
+  esac
+
+  local keyring="/usr/share/keyrings/yazi-keyring.gpg"
+  local tmp_key="$HOME/.cache/yazi-keyring.gpg"
+  mkdir -p "$(dirname "$tmp_key")"
+
+  # Download to a temp file first: `curl | sudo tee` would happily install an
+  # HTML error page as if it were a signing key.
+  printf '[install] fetching the yazi signing key\n'
+  if ! curl -fsSL -o "$tmp_key" "$YAZI_KEYRING_URL" || [ ! -s "$tmp_key" ]; then
+    printf '[install] warning: could not download the yazi signing key from %s\n' "$YAZI_KEYRING_URL"
+    rm -f "$tmp_key"
+    return 1
+  fi
+
+  sudo install -m 0644 "$tmp_key" "$keyring"
+  rm -f "$tmp_key"
+
+  printf 'deb [arch=%s signed-by=%s] %s %s main\n' \
+    "$arch" "$keyring" "$YAZI_REPO_URL" "$YAZI_SUITE" |
+    sudo tee /etc/apt/sources.list.d/yazi.list >/dev/null
+  printf '[install] added the yazi repository (%s, %s)\n' "$YAZI_SUITE" "$arch"
+
+  sudo apt-get update
+  if sudo apt-get install -y yazi; then
+    printf '[install] installed yazi\n'
+    return 0
+  fi
+
+  printf '[install] warning: could not install yazi from its repository\n'
+  return 1
+}
+
+# Clipcat publishes .deb assets on its GitHub releases (amd64 + arm64).
+install_clipcat() {
+  if command -v clipcatd >/dev/null 2>&1; then
+    printf '[install] clipcat already available: %s\n' "$(command -v clipcatd)"
+    return 0
+  fi
+
+  local arch
+  arch="$(dpkg --print-architecture)"
+  case "$arch" in
+    amd64|arm64) ;;
+    *)
+      printf '[install] warning: clipcat publishes no %s package, skipping\n' "$arch"
+      return 1
+      ;;
+  esac
+
+  # Resolve the newest tag by following the /releases/latest redirect, which
+  # avoids the GitHub API rate limit.
+  local version
+  version="$(curl -fsSL -o /dev/null -w '%{url_effective}' \
+    "https://github.com/${CLIPCAT_REPO}/releases/latest" 2>/dev/null)" || true
+  version="${version##*/}"
+
+  case "$version" in
+    v[0-9]*) ;;
+    *)
+      printf '[install] warning: could not resolve the latest clipcat release (got "%s")\n' "$version"
+      return 1
+      ;;
+  esac
+
+  local deb="clipcat_${version#v}_${arch}.deb"
+  local url="https://github.com/${CLIPCAT_REPO}/releases/download/${version}/${deb}"
+  local tmp_deb="$HOME/.cache/${deb}"
+  mkdir -p "$(dirname "$tmp_deb")"
+
+  printf '[install] downloading clipcat %s (%s)\n' "$version" "$arch"
+  if ! curl -fsSL -o "$tmp_deb" "$url" || [ ! -s "$tmp_deb" ]; then
+    printf '[install] warning: could not download %s\n' "$url"
+    rm -f "$tmp_deb"
+    return 1
+  fi
+
+  # `apt-get install ./pkg.deb` resolves dependencies; plain `dpkg -i` leaves
+  # the package half-configured when any are missing.
+  if sudo apt-get install -y "$tmp_deb"; then
+    printf '[install] installed clipcat %s\n' "$version"
+  elif sudo dpkg -i "$tmp_deb" && sudo apt-get -f install -y; then
+    printf '[install] installed clipcat %s (with dependency repair)\n' "$version"
+  else
+    printf '[install] warning: could not install %s\n' "$deb"
+    rm -f "$tmp_deb"
+    return 1
+  fi
+
+  rm -f "$tmp_deb"
+  return 0
+}
+
+install_extras() {
+  if ! command -v apt-get >/dev/null 2>&1; then
+    printf '[install] apt-get not available, skipping yazi/clipcat\n'
+    return 1
+  fi
+  install_yazi || true
+  install_clipcat || true
 }
 
 backup_path() {
@@ -358,6 +489,7 @@ Usage: $0 [options]
 
 Options:
   --skip-packages          Skip apt package installation.
+  --skip-extras            Do not install yazi/clipcat from upstream sources.
   --download-fonts URL     Download and install fonts from a ZIP URL.
   --download-wallpapers URL  Download extra wallpapers from a ZIP URL into the Pyr walls folder.
   --help                   Show this help message.
@@ -374,6 +506,7 @@ require_arg() {
 
 main() {
   local install_packages=true
+  local want_extras=true
   local download_fonts_url=""
   local download_wallpapers_url=""
 
@@ -381,6 +514,10 @@ main() {
     case "$1" in
       --skip-packages)
         install_packages=false
+        shift
+        ;;
+      --skip-extras)
+        want_extras=false
         shift
         ;;
       --download-fonts)
@@ -409,6 +546,12 @@ main() {
 
   if [ "$install_packages" = true ]; then
     install_from_apt || true
+  fi
+
+  if [ "$want_extras" = true ]; then
+    install_extras || true
+  else
+    printf '[install] skipping yazi/clipcat (--skip-extras)\n'
   fi
 
   install_configs

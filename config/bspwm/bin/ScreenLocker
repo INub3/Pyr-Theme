@@ -119,17 +119,21 @@ calculate_positions() {
     fi
 }
 
-default_lockscreen () {
+# i3lock-color (a fork) provides the ring/clock/colour flags used below.
+# Debian ships vanilla i3lock, which rejects them and exits WITHOUT locking the
+# screen. Detect which one is installed and fall back to a plain but working
+# lock rather than silently leaving the session unlocked.
+i3lock_has_color() {
+    i3lock --help 2>&1 | grep -q -- '--ring-color'
+}
 
-    save_current_keymap
-    setxkbmap -layout us
+# run_i3lock <image> [extra i3lock-color args]
+run_i3lock() {
+    lock_img="$1"
+    shift
 
-    get_screen_resolution
-    calculate_positions
-
-    maim -d 0.3 -u ${TEMP_IMAGE}
-    magick $TEMP_IMAGE -blur 5x4 $TEMP_IMAGE
-    i3lock -n --force-clock -i $TEMP_IMAGE -e --indicator \
+    if i3lock_has_color; then
+        i3lock -n --force-clock -i "$lock_img" "$@" -e --indicator \
         --radius=$RADIUS --ring-width=$RING_WIDTH --inside-color=$bg \
         --ring-color=$ring --insidever-color=$verify --ringver-color=$verify \
         --insidewrong-color=$wrong --ringwrong-color=$wrong --line-uses-inside \
@@ -145,6 +149,39 @@ default_lockscreen () {
         --greeter-color=$fg --wrong-color=$wrong --verif-color=$verify \
         --pointer=default --refresh-rate=0 \
         --pass-media-keys --pass-volume-keys
+        return $?
+    fi
+
+    # Vanilla i3lock decodes PNG only, so re-encode before handing it over.
+    vanilla_img="${TEMP_IMAGE%.jpg}.png"
+    if command -v magick >/dev/null 2>&1; then
+        magick "$lock_img" "$vanilla_img" 2>/dev/null
+    elif command -v convert >/dev/null 2>&1; then
+        convert "$lock_img" "$vanilla_img" 2>/dev/null
+    fi
+
+    if [ -s "$vanilla_img" ]; then
+        i3lock -n -e -p default -i "$vanilla_img"
+    else
+        # No converter available: lock on a flat background instead of failing.
+        i3lock -n -e -p default -c "${bg#\#}"
+    fi
+    lock_status=$?
+    rm -f "$vanilla_img"
+    return $lock_status
+}
+
+default_lockscreen () {
+
+    save_current_keymap
+    setxkbmap -layout us
+
+    get_screen_resolution
+    calculate_positions
+
+    maim -d 0.3 -u ${TEMP_IMAGE}
+    magick $TEMP_IMAGE -blur 5x4 $TEMP_IMAGE
+    run_i3lock "$TEMP_IMAGE"
         restore_previous_keymap
 }
 
@@ -171,22 +208,7 @@ rice_lockscreen () {
         ;;
     esac
 
-    i3lock -n --force-clock -i $TEMP_IMAGE --scale -e --indicator \
-        --radius=$RADIUS --ring-width=$RING_WIDTH --inside-color=$bg \
-        --ring-color=$ring --insidever-color=$verify --ringver-color=$verify \
-        --insidewrong-color=$wrong --ringwrong-color=$wrong --line-uses-inside \
-        --keyhl-color=$verify --separator-color=$verify --bshl-color=$verify \
-        --time-str="%H:%M" --time-size=$TIME_SIZE --date-str="%a, %d %b" \
-        --date-size=$DATE_SIZE --verif-text="Verifying Password..." --wrong-text="Wrong Password!" \
-        --noinput-text="" --greeter-text="Type the password to Unlock" --ind-pos="$CENTER_X:$IND_Y" \
-        --time-font="JetBrainsMono NF:style=Bold" --date-font="JetBrainsMono NF" --verif-font="JetBrainsMono NF" \
-        --greeter-font="JetBrainsMono NF" --wrong-font="JetBrainsMono NF" --verif-size=$TEXT_SIZE \
-        --greeter-size=$TEXT_SIZE --wrong-size=$TEXT_SIZE --time-pos="$CENTER_X:$TIME_Y" \
-        --date-pos="$CENTER_X:$DATE_Y" --greeter-pos="$CENTER_X:$GREETER_Y" --wrong-pos="$CENTER_X:$WRONG_Y" \
-        --verif-pos="$CENTER_X:$VERIF_Y" --date-color=$date --time-color=$date \
-        --greeter-color=$fg --wrong-color=$wrong --verif-color=$verify \
-        --pointer=default --refresh-rate=0 \
-        --pass-media-keys --pass-volume-keys
+    run_i3lock "$TEMP_IMAGE" --scale
 
 	 restore_previous_keymap
 }

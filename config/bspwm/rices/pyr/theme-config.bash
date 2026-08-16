@@ -90,9 +90,16 @@ sl_date="${fg}"
 sl_verify="${green}"
 
 # Gtk theme
+# These names must match a directory in /usr/share/themes or ~/.themes
+# (and /usr/share/icons or ~/.icons for the icon and cursor themes).
+# A name that does not exist makes GTK fall back to Adwaita without warning.
 gtk_theme="TokyoNight-zk"
 gtk_icons="Papirus-Dark"
 gtk_cursor="Qogirr-Dark"
+gtk_font="CascadiaCode 10"
+gtk_prefer_dark="1"		# GTK3 only: pick the dark variant of the theme
+gtk_hintstyle="hintslight"	# none|hintslight|hintmedium|hintfull
+gtk_rgba="rgb"			# none|rgb|bgr|vrgb|vbgr
 geany_theme="z0mbi3-TokyoNight"
 
 # Wallpaper engine
