@@ -94,13 +94,14 @@ super + alt + x
 super + alt + o
     OpenApps --scratch
 
-# jgmenu
+# jgmenu — only when the pointer is over the desktop, not over a window.
+# bspwm has no desktop window: feh paints the root window directly, so it has
+# no _NET_WM_WINDOW_TYPE to test. Ask bspwm instead: `-n pointed` fails when
+# there is no node under the pointer, which means we are on the desktop.
 ~button3
-    win=$(xdotool getmouselocation --shell | sed -n 's/^WINDOW=\(.*\)/\1/p'); \
-    type=$(xprop -id "$win" _NET_WM_WINDOW_TYPE 2>/dev/null); \
-    case "$type" in *DESKTOP*) \
+    bspc query -N -n pointed >/dev/null 2>&1 || \
         jgmenu --csv-file="$HOME/.config/bspwm/config/jgmenu.txt" \
-               --config-file="$HOME/.config/bspwm/config/jgmenurc";; esac
+               --config-file="$HOME/.config/bspwm/config/jgmenurc"
 
 # Power off, Reboot, Log out, Lockscreen, kill an app
 ctrl + super + alt + {p,r,q,l,k,s}

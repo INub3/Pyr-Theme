@@ -29,6 +29,8 @@ CORE_PACKAGES=(
   flameshot maim imagemagick i3lock xxhash
   # Shell, editors and CLI tools referenced by .zshrc / Term / RofiPass
   zsh neovim geany bat eza jq bc pass gnupg
+  # GUI apps bound to keys in sxhkdrc (thunar = super + f)
+  thunar
   # Runtime for the Python helpers (RiceEditor, NetManagerDM)
   python3 python3-gi gir1.2-gtk-3.0 gir1.2-nm-1.0 python3-neovim
   # Build/base tooling and fonts
@@ -40,8 +42,10 @@ CORE_PACKAGES=(
 # Nice to have: the desktop degrades gracefully when these are missing.
 # yazi and clipcat are NOT here: Debian does not package them, so they get their
 # own installers further down (see install_extras).
+# A browser is personal, so firefox-esr is only a fallback: OpenApps --browser
+# picks up firefox, firefox-esr, chromium or brave, whichever is present.
 OPTIONAL_PACKAGES=(
-  qogir-icon-theme simple-mtpfs mpv
+  qogir-icon-theme simple-mtpfs mpv firefox-esr
   zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search fzf python3-pip
 )
 

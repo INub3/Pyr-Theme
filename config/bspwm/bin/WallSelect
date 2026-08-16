@@ -26,7 +26,9 @@
 # Set some variables
 read -r current_rice <"$HOME"/.config/bspwm/.rice
 wall_dir="$HOME/.config/bspwm/rices/$current_rice/walls"
-cacheDir="$HOME/.cache/$USER/$current_rice"
+# $USER is not guaranteed in a process spawned by sxhkd, and an empty one
+# silently moves the cache to ~/.cache/<rice> instead of ~/.cache/<user>/<rice>.
+cacheDir="$HOME/.cache/${USER:-$(id -un)}/$current_rice"
 
 # Create cache dir if not exists
 [ -d "$cacheDir" ] || mkdir -p "$cacheDir"

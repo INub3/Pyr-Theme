@@ -8,6 +8,29 @@
 # Licensed under GPL-3.0 license
 # =============================================================
 
+# Launch a GUI app, or say why nothing happened. Several of these are not
+# installed by install.sh (thunar, telegram-desktop) or carry a different
+# binary name on Debian, and a missing one used to fail silently: the
+# keybinding simply did nothing.
+launch() {
+	if [ -z "$1" ] || ! command -v "$1" >/dev/null 2>&1; then
+		dunstify -u critical "Pyr" "${1:-That application} is not installed" 2>/dev/null ||
+			echo "${1:-That application} is not installed" >&2
+		exit 1
+	fi
+	"$@"
+}
+
+# Debian ships Firefox as `firefox-esr`; upstream builds use `firefox`.
+browser_bin() {
+	for b in firefox firefox-esr chromium brave-browser; do
+		if command -v "$b" >/dev/null 2>&1; then
+			echo "$b"
+			return 0
+		fi
+	done
+}
+
 case "$1" in
 	--menu)
 		RofiLauncher --launcher
@@ -65,22 +88,22 @@ case "$1" in
 		;;
 		# Apps
 	--filemanager)
-		thunar
+		launch thunar
 		;;
 	--browser)
-		firefox
+		launch "$(browser_bin)"
 		;;
 	--editor)
-		geany
+		launch geany
 		;;
 	--telegram)
-		telegram-desktop
+		launch telegram-desktop
 		;;
 	--whats)
-		firefox -new-tab https://web.whatsapp.com/
+		launch "$(browser_bin)" -new-tab https://web.whatsapp.com/
 		;;
 	--soundcontrol)
-		pavucontrol
+		launch pavucontrol
 		;;
 	*)
 		echo "Invalid Option"
